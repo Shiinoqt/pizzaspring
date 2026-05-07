@@ -10,15 +10,15 @@ import java.util.Collection;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "cliente")
-public class Cliente {
+@Table
+public class Rider {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idCliente;
+    private Long idRider;
 
     @Column(nullable = false)
-    private String nome, indirizzo, telefono;
+    private String nome;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "rider")
     private Collection<Ordine> ordini;
 }
