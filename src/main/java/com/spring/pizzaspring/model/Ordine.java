@@ -11,7 +11,7 @@ import java.util.Collection;
 @AllArgsConstructor
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE) // Creates one table for each class hierarchy (in this case OrdinePizza)
-@DiscriminatorColumn(name="tipo_ordine", discriminatorType = DiscriminatorType.INTEGER) // To differentiate the tables this creates a column
+@DiscriminatorColumn(name="tipo_ordine", discriminatorType = DiscriminatorType.STRING) // To differentiate the tables this creates a column
 @Table(name = "ordine")
 public class Ordine {
     @Id
@@ -21,7 +21,7 @@ public class Ordine {
     @JoinColumn(name = "idCliente", nullable = false) // Creates column "idCliente" that points to the class primary key
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "ordine", cascade = CascadeType.ALL, orphanRemoval = true) // One "order" is associated to many pizzas
+    @OneToMany(mappedBy = "ordine", cascade = CascadeType.PERSIST, orphanRemoval = true) // One "order" is associated to many pizzas
     private Collection<OrdinePizza> pizzeOrdinate;
 
     @ManyToOne // Many "order" can be associated to one rider
