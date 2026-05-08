@@ -5,8 +5,9 @@ import com.spring.pizzaspring.dto.PizzaDTO;
 import java.util.Collection;
 
 public interface PizzaService {
-    PizzaDTO insertPizza(PizzaDTO pizzaDTO);
-    PizzaDTO getPizzaById(Long id);
-    Collection<PizzaDTO> selectAll();
+    PizzaDTO createPizza(PizzaDTO pizzaDTO);
+    PizzaDTO updatePizza(Long id, PizzaDTO pizzaDTO);
     void deletePizza(Long id);
+    PizzaDTO getPizzaById(Long id);
+    Collection<PizzaDTO> getAllPizze();
 }

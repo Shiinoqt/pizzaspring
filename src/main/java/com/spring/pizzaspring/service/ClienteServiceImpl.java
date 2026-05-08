@@ -6,16 +6,19 @@ import com.spring.pizzaspring.model.Cliente;
 import com.spring.pizzaspring.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ClienteServiceImpl implements ClienteService{
 
+    @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
     private ClienteMapper clienteMapper;
 
     @Override
@@ -27,17 +30,16 @@ public class ClienteServiceImpl implements ClienteService{
     }
 
     @Override
-    public ClienteDTO updateCliente(Long id, ClienteDTO updateDTO) {
+    public ClienteDTO updateCliente(Long id, ClienteDTO newClienteDTO) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente not found."));
 
-        cliente.setNome(updateDTO.getNome());
-        cliente.setIndirizzo(updateDTO.getIndirizzo());
-        cliente.setTelefono(updateDTO.getTelefono());
+        cliente.setNome(newClienteDTO.getNome());
+        cliente.setIndirizzo(newClienteDTO.getIndirizzo());
+        cliente.setTelefono(newClienteDTO.getTelefono());
 
         return clienteMapper.clienteToDTO(cliente);
     }
-
 
     @Override
     public ClienteDTO getClienteById(Long id) {
