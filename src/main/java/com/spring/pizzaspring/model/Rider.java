@@ -10,7 +10,7 @@ import java.util.Collection;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table
+@Table(name = "rider")
 public class Rider {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
