@@ -14,7 +14,7 @@ import java.util.List;
 public class PizzaServiceImpl implements PizzaService {
 
     @Autowired
-    private PizzaRepository pizzaRepository;,
+    private PizzaRepository pizzaRepository;
 
     @Autowired
     private PizzaMapper pizzaMapper;

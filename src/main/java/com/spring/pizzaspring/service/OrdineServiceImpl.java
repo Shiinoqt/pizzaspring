@@ -3,8 +3,10 @@ package com.spring.pizzaspring.service;
 import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.OrdinePrioritarioDTO;
 import com.spring.pizzaspring.mapper.OrdineMapper;
+import com.spring.pizzaspring.mapper.OrdinePrioritarioMapper;
 import com.spring.pizzaspring.model.Ordine;
-import com.spring.pizzaspring.repository.ClienteRepository;
+import com.spring.pizzaspring.model.OrdinePrioritario;
+import com.spring.pizzaspring.model.Rider;
 import com.spring.pizzaspring.repository.OrdineRepository;
 import com.spring.pizzaspring.repository.RiderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,21 +24,31 @@ public class OrdineServiceImpl implements OrdineService{
     private OrdineMapper ordineMapper;
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private OrdinePrioritarioMapper ordinePrioritarioMapper;
 
     @Autowired
     private RiderRepository riderRepository;
 
     @Override
     public void creaOrdine(OrdineDTO dto) {
+        Ordine ordine = ordineMapper.DTOToOrdine(dto);
+        ordineRepository.save(ordine);
     }
 
     @Override
     public void creaOrdinePrioritario(OrdinePrioritarioDTO dto) {
+        OrdinePrioritario ordinePrioritario = ordinePrioritarioMapper.DTOToOrdineprioritario(dto);
+        ordineRepository.save(ordinePrioritario);
     }
 
     @Override
     public void assegnaRider(String codiceOrdine, String idRider) {
+        Ordine ordine = ordineRepository.findById(codiceOrdine)
+                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+        Rider rider = riderRepository.findById(Long.parseLong(idRider))
+                .orElseThrow(() -> new RuntimeException("Rider non trovato"));
+        ordine.setRider(rider);
+        ordineRepository.save(ordine);
     }
 
     @Override
@@ -45,8 +57,8 @@ public class OrdineServiceImpl implements OrdineService{
     }
 
     @Override
-    public OrdineDTO getOrdineById(Long id) {
-        Ordine ordine = ordineRepository.findById(id)
+    public OrdineDTO getOrdineById(String codice) {
+        Ordine ordine = ordineRepository.findById(codice)
                 .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
 
         return ordineMapper.ordineToDTO(ordine);
@@ -61,7 +73,7 @@ public class OrdineServiceImpl implements OrdineService{
     }
 
     @Override
-    public void deleteOrdine(Long id) {
+    public void deleteOrdine(String id) {
         if (!ordineRepository.existsById(id)) {
             throw new RuntimeException("Ordine non trovato");
         }
