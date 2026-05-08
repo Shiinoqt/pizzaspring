@@ -4,7 +4,7 @@ import com.spring.pizzaspring.dto.PizzaDTO;
 import com.spring.pizzaspring.model.Pizza;
 import org.mapstruct.Mapper;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface PizzaMapper {
     PizzaDTO pizzaToDTO(Pizza pizza);
     Pizza DTOToPizza(PizzaDTO pizzaDTO);

@@ -5,7 +5,7 @@ import com.spring.pizzaspring.model.OrdinePrioritario;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface OrdinePrioritarioMapper {
     @Mapping(target = "tipoOrdine", constant = "prioritario")
     OrdinePrioritarioDTO ordineprioritarioToDTO(OrdinePrioritario ordinePrioritario);

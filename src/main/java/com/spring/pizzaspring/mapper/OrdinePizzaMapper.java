@@ -5,7 +5,7 @@ import com.spring.pizzaspring.model.OrdinePizza;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface OrdinePizzaMapper {
     @Mapping(source = "pizza.idPizza", target = "idPizza")
     @Mapping(source = "quantità", target = "quantita")
