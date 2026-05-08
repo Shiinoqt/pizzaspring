@@ -42,10 +42,10 @@ public class OrdineServiceImpl implements OrdineService{
     }
 
     @Override
-    public void assegnaRider(String codiceOrdine, String idRider) {
+    public void assegnaRider(String codiceOrdine, Long idRider) {
         Ordine ordine = ordineRepository.findById(codiceOrdine)
                 .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
-        Rider rider = riderRepository.findById(Long.parseLong(idRider))
+        Rider rider = riderRepository.findById(idRider)
                 .orElseThrow(() -> new RuntimeException("Rider non trovato"));
         ordine.setRider(rider);
         ordineRepository.save(ordine);

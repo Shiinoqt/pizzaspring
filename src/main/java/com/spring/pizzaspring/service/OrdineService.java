@@ -9,7 +9,7 @@ public interface OrdineService {
 
     void creaOrdine(OrdineDTO dto);
     void creaOrdinePrioritario(OrdinePrioritarioDTO dto);
-    void assegnaRider(String codiceOrdine, String idRider);
+    void assegnaRider(String codiceOrdine, Long idRider);
     Double calcoloTotale(String codiceOrdine);
     OrdineDTO getOrdineById(String id);
     Collection<OrdineDTO> selectAll();
