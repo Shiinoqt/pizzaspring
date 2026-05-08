@@ -7,6 +7,5 @@ import org.mapstruct.Mapper;
 @Mapper
 public interface RiderMapper {
     RiderDTO riderToDTO(Rider rider);
-
     Rider DTOToRider(RiderDTO riderDTO);
 }

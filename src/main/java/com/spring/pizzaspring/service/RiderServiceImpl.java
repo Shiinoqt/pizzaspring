@@ -37,23 +37,7 @@ public class RiderServiceImpl implements RiderService{
     }
 
     @Override
-    @Transactional
-    public RiderDTO assegnaRiderOrdine(Long idRider, String codice) {
-        Rider rider = riderRepository.findById(idRider) // Fetch del rider
-                .orElseThrow(() -> new RuntimeException("Rider non trovato"));
-
-        Ordine ordine = ordineRepository.findById(codice) // Fetch dell'ordine
-                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
-
-        // Set rider to Order
-        ordine.setRider(rider);
-
-        ordineRepository.save(ordine);
-        return riderMapper.riderToDTO(rider);
-    }
-
-    @Override
-    public RiderDTO selectById(Long id) {
+    public RiderDTO getRiderById(Long id) {
         Rider rider = riderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rider non trovato"));
         return riderMapper.riderToDTO(rider);

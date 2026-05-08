@@ -6,8 +6,7 @@ import java.util.Collection;
 
 public interface RiderService {
     RiderDTO registraRider(RiderDTO riderDTO);
-    RiderDTO assegnaRiderOrdine(Long idRider, String codice);
-    RiderDTO selectById(Long id);
+    RiderDTO getRiderById(Long id);
     Collection<RiderDTO> selectAll();
     void deleteRider(Long id);
 }
