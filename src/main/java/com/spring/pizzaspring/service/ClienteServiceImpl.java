@@ -5,12 +5,10 @@ import com.spring.pizzaspring.mapper.ClienteMapper;
 import com.spring.pizzaspring.model.Cliente;
 import com.spring.pizzaspring.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.List;
 
 @Service
 public class ClienteServiceImpl implements ClienteService{
