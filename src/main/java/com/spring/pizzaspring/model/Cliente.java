@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.util.Collection;
 
+@ToString
 @Getter
 @Setter
 @AllArgsConstructor
