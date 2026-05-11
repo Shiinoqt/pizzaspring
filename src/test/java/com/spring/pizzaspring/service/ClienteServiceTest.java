@@ -1,8 +1,11 @@
 package com.spring.pizzaspring.service;
 
 import com.spring.pizzaspring.dto.ClienteDTO;
+import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.mapper.ClienteMapper;
+import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.model.Cliente;
+import com.spring.pizzaspring.model.Ordine;
 import com.spring.pizzaspring.repository.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +25,9 @@ import static org.mockito.Mockito.*;
 // Enables Mockito
 @ExtendWith(MockitoExtension.class)
 public class ClienteServiceTest {
+    @Mock
+    private OrdineMapper ordineMapper; // Add this mock
+
     @Mock
     private ClienteRepository clienteRepository;
 
@@ -121,6 +128,27 @@ public class ClienteServiceTest {
         // Assert
         assertEquals(1, results.size());
         assertFalse(results.isEmpty());
+    }
+
+    @Test
+    void getOrdiniByCliente_ShouldReturnListOfDTOs() {
+        Long id = 1L;
+
+        Ordine o1 = new Ordine();
+        o1.setCodice("ORD-1");
+        clienteEntity.setOrdini(List.of(o1));
+
+        OrdineDTO ordineDto = new OrdineDTO();
+        ordineDto.setCodice("ORD-1");
+
+        when(clienteRepository.findById(id)).thenReturn(Optional.of(clienteEntity));
+        when(ordineMapper.ordineToDTO(o1)).thenReturn(ordineDto);
+
+        Collection<OrdineDTO> results = clienteService.getOrdiniByCliente(id);
+        System.out.println(results);
+
+        assertNotNull(results);
+        assertEquals(1, results.size());
     }
 
     @Test

@@ -105,7 +105,6 @@ public class OrdineServiceTest {
         ordinePrio.setPizzeOrdinate(List.of(link));
 
         when(ordineRepository.findById(codice)).thenReturn(Optional.of(ordinePrio));
-
         Double result = service.calcoloTotale(codice);
 
         assertEquals(13.0, result);
