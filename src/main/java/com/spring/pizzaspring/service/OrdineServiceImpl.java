@@ -4,15 +4,15 @@ import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.OrdinePrioritarioDTO;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.mapper.OrdinePrioritarioMapper;
-import com.spring.pizzaspring.model.Ordine;
-import com.spring.pizzaspring.model.OrdinePrioritario;
-import com.spring.pizzaspring.model.Rider;
+import com.spring.pizzaspring.model.*;
 import com.spring.pizzaspring.repository.OrdineRepository;
 import com.spring.pizzaspring.repository.RiderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OrdineServiceImpl implements OrdineService{
@@ -53,7 +53,20 @@ public class OrdineServiceImpl implements OrdineService{
 
     @Override
     public Double calcoloTotale(String codiceOrdine) {
-        return 0.0;
+        Ordine ordine = ordineRepository.findById(codiceOrdine)
+                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+
+        // Calculate the total of the pizzas
+        double totalPizze = ordine.getPizzeOrdinate().stream()
+                .mapToDouble(lp -> lp.getPizza().getPrezzo() * lp.getQuantita())
+                .sum();
+
+        // Add surcharge if it is Priority
+        if (ordine instanceof OrdinePrioritario) {
+            totalPizze += ((OrdinePrioritario) ordine).getSovrapprezzo();
+        }
+
+        return totalPizze;
     }
 
     @Override
@@ -70,6 +83,18 @@ public class OrdineServiceImpl implements OrdineService{
                 .stream()
                 .map(ordineMapper::ordineToDTO)
                 .toList();
+    }
+
+    @Override
+    public Map<String, Integer> getDettaglioPizze(String codiceOrdine) {
+        Ordine ordine = ordineRepository.findById(codiceOrdine)
+                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+
+        return ordine.getPizzeOrdinate().stream()
+                .collect(Collectors.toMap(
+                        link -> link.getPizza().getNome(),
+                        OrdinePizza::getQuantita
+                ));
     }
 
     @Override

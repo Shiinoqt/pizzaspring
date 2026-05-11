@@ -20,5 +20,5 @@ public class OrdinePizza {
     @JoinColumn(name = "idPizza")
     private Pizza pizza;
 
-    private Integer quantità;
+    private Integer quantita;
 }

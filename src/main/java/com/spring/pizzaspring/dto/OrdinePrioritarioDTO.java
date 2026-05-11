@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrdinePrioritarioDTO extends OrdineDTO {
-    private double sovraprezzo;
+    private double sovrapprezzo;
     private String tipoOrdine = "prioritario";
 }

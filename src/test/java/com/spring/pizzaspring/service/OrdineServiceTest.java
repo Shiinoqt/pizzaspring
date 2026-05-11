@@ -4,9 +4,7 @@ import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.OrdinePrioritarioDTO;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.mapper.OrdinePrioritarioMapper;
-import com.spring.pizzaspring.model.Ordine;
-import com.spring.pizzaspring.model.OrdinePrioritario;
-import com.spring.pizzaspring.model.Rider;
+import com.spring.pizzaspring.model.*;
 import com.spring.pizzaspring.repository.OrdineRepository;
 import com.spring.pizzaspring.repository.RiderRepository;
 import org.junit.jupiter.api.Test;
@@ -15,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,7 +47,7 @@ public class OrdineServiceTest {
 
         service.creaOrdine(dto);
 
-        verify(ordineRepository, times(1)).save(entity);
+        verify(ordineRepository).save(entity);
     }
 
     @Test
@@ -58,7 +58,86 @@ public class OrdineServiceTest {
 
         service.creaOrdinePrioritario(dto);
 
-        verify(ordineRepository, times(1)).save(entity);
+        verify(ordineRepository).save(entity);
+    }
+
+    @Test
+    void calcoloTotale_ShouldSumPizzasThroughLinkEntity() {
+        String codice = "ORD-123";
+        Ordine ordine = new Ordine();
+
+        Pizza p1 = new Pizza();
+        p1.setPrezzo(10.0);
+        Pizza p2 = new Pizza();
+        p2.setPrezzo(5.0);
+
+        OrdinePizza link1 = new OrdinePizza();
+        link1.setPizza(p1);
+        link1.setQuantita(1);
+
+        OrdinePizza link2 = new OrdinePizza();
+        link2.setPizza(p2);
+        link2.setQuantita(3);
+
+        ordine.setPizzeOrdinate(List.of(link1, link2));
+
+        when(ordineRepository.findById(codice)).thenReturn(Optional.of(ordine));
+
+        Double result = service.calcoloTotale(codice);
+
+        assertEquals(25.0, result);
+    }
+
+    @Test
+    void calcoloTotale_ShouldIncludeSurchargeForPriorityOrder() {
+        String codice = "PRIO-123";
+
+        OrdinePrioritario ordinePrio = new OrdinePrioritario();
+        ordinePrio.setSovrapprezzo(3.0);
+
+        Pizza p1 = new Pizza();
+        p1.setPrezzo(10.0);
+
+        OrdinePizza link = new OrdinePizza();
+        link.setPizza(p1);
+        link.setQuantita(1);
+
+        ordinePrio.setPizzeOrdinate(List.of(link));
+
+        when(ordineRepository.findById(codice)).thenReturn(Optional.of(ordinePrio));
+
+        Double result = service.calcoloTotale(codice);
+
+        assertEquals(13.0, result);
+    }
+
+    @Test
+    void getDettaglioPizze_ShouldReturnCorrectQuantities() {
+        String codice = "ORD-123";
+        Ordine ordine = new Ordine();
+
+        Pizza p1 = new Pizza();
+        p1.setNome("Margherita");
+
+        Pizza p2 = new Pizza();
+        p2.setNome("Diavola");
+
+        OrdinePizza link1 = new OrdinePizza();
+        link1.setPizza(p1);
+        link1.setQuantita(2);
+
+        OrdinePizza link2 = new OrdinePizza();
+        link2.setPizza(p2);
+        link2.setQuantita(1);
+
+        ordine.setPizzeOrdinate(List.of(link1, link2));
+        when(ordineRepository.findById(codice)).thenReturn(Optional.of(ordine));
+
+        Map<String, Integer> dettaglio = service.getDettaglioPizze(codice);
+        System.out.println(dettaglio);
+
+        assertEquals(2, dettaglio.get("Margherita"));
+        assertEquals(1, dettaglio.get("Diavola"));
     }
 
     @Test
@@ -97,7 +176,6 @@ public class OrdineServiceTest {
 
         when(ordineRepository.findById(codice)).thenReturn(Optional.of(entity));
         when(ordineMapper.ordineToDTO(entity)).thenReturn(dto);
-
 
         OrdineDTO result = service.getOrdineById(codice);
 
