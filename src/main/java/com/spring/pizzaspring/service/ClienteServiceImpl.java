@@ -36,6 +36,8 @@ public class ClienteServiceImpl implements ClienteService{
         cliente.setIndirizzo(newClienteDTO.getIndirizzo());
         cliente.setTelefono(newClienteDTO.getTelefono());
 
+        Cliente savedCliente = clienteRepository.save(cliente);
+
         return clienteMapper.clienteToDTO(cliente);
     }
 

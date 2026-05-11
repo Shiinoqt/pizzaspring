@@ -35,6 +35,18 @@ public class RiderServiceImpl implements RiderService{
     }
 
     @Override
+    public RiderDTO updateRider(Long id, RiderDTO newRiderDTO) {
+        Rider rider = riderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rider not found."));
+
+        rider.setNome(newRiderDTO.getNome());
+
+        Rider savedRider = riderRepository.save(rider);
+
+        return riderMapper.riderToDTO(savedRider);
+    }
+
+    @Override
     public Collection<RiderDTO> selectAll() {
         return riderRepository.findAll()
                 .stream()
