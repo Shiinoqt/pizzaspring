@@ -7,6 +7,7 @@ import com.spring.pizzaspring.mapper.OrdinePrioritarioMapper;
 import com.spring.pizzaspring.model.*;
 import com.spring.pizzaspring.repository.OrdineRepository;
 import com.spring.pizzaspring.repository.RiderRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,29 +41,32 @@ public class OrdineServiceTest {
     private OrdineServiceImpl service;
 
     @Test
-    void creaOrdine_ShouldSaveSuccessfully() {
+    @DisplayName("Should successfully save a standard order")
+    void creaOrdine() {
         OrdineDTO dto = new OrdineDTO();
         Ordine entity = new Ordine();
         when(ordineMapper.DTOToOrdine(dto)).thenReturn(entity);
 
         service.creaOrdine(dto);
 
-        verify(ordineRepository).save(entity);
+        verify(ordineRepository, times(1)).save(entity);
     }
 
     @Test
-    void creaOrdinePrioritario_ShouldSaveSuccessfully() {
+    @DisplayName("Should successfully save a priority order")
+    void creaOrdinePrioritario() {
         OrdinePrioritarioDTO dto = new OrdinePrioritarioDTO();
         OrdinePrioritario entity = new OrdinePrioritario();
         when(ordinePrioritarioMapper.DTOToOrdineprioritario(dto)).thenReturn(entity);
 
         service.creaOrdinePrioritario(dto);
 
-        verify(ordineRepository).save(entity);
+        verify(ordineRepository, times(1)).save(entity);
     }
 
     @Test
-    void calcoloTotale_ShouldSumPizzasThroughLinkEntity() {
+    @DisplayName("Should correctly calculate total price by summing pizzas through the link entity")
+    void calcoloTotale() {
         String codice = "ORD-123";
         Ordine ordine = new Ordine();
 
@@ -89,7 +93,8 @@ public class OrdineServiceTest {
     }
 
     @Test
-    void calcoloTotale_ShouldIncludeSurchargeForPriorityOrder() {
+    @DisplayName("Should include the priority surcharge in the total price for priority orders")
+    void calcoloTotalePrio() {
         String codice = "PRIO-123";
 
         OrdinePrioritario ordinePrio = new OrdinePrioritario();
@@ -111,7 +116,8 @@ public class OrdineServiceTest {
     }
 
     @Test
-    void getDettaglioPizze_ShouldReturnCorrectQuantities() {
+    @DisplayName("Should return a map of pizza names and quantities for a specific order")
+    void getDettaglioPizze() {
         String codice = "ORD-123";
         Ordine ordine = new Ordine();
 
@@ -133,14 +139,15 @@ public class OrdineServiceTest {
         when(ordineRepository.findById(codice)).thenReturn(Optional.of(ordine));
 
         Map<String, Integer> dettaglio = service.getDettaglioPizze(codice);
-        System.out.println(dettaglio);
 
+        assertNotNull(dettaglio);
         assertEquals(2, dettaglio.get("Margherita"));
         assertEquals(1, dettaglio.get("Diavola"));
     }
 
     @Test
-    void assegnaRider_ShouldUpdateOrdineWithRider() {
+    @DisplayName("Should assign a rider to an order and persist the change")
+    void assegnaRider() {
         String codice = "ORD-123";
         Long riderId = 1L;
 
@@ -158,7 +165,8 @@ public class OrdineServiceTest {
     }
 
     @Test
-    void assegnaRider_ShouldThrowException_WhenRiderNotFound() {
+    @DisplayName("Should throw RuntimeException when attempting to assign a non-existent rider")
+    void assegnaRiderNonEsistente() {
         String codice = "ORD-123";
         when(ordineRepository.findById(codice)).thenReturn(Optional.of(new Ordine()));
         when(riderRepository.findById(1L)).thenReturn(Optional.empty());
@@ -168,7 +176,8 @@ public class OrdineServiceTest {
     }
 
     @Test
-    void getOrdineById_ShouldReturnDTO() {
+    @DisplayName("Should return order DTO when ID is found")
+    void getOrdineById() {
         String codice = "ABC";
         Ordine entity = new Ordine();
         OrdineDTO dto = new OrdineDTO();
@@ -180,15 +189,18 @@ public class OrdineServiceTest {
 
         assertNotNull(result);
         verify(ordineRepository).findById(codice);
+        verify(ordineMapper).ordineToDTO(entity);
     }
 
     @Test
-    void deleteOrdine_ShouldInvokeDelete_WhenExists() {
+    @DisplayName("Should invoke delete on repository when order exists")
+    void deleteOrdine() {
         String id = "ORD-001";
         when(ordineRepository.existsById(id)).thenReturn(true);
 
         service.deleteOrdine(id);
 
+        verify(ordineRepository).existsById(id);
         verify(ordineRepository).deleteById(id);
     }
 }

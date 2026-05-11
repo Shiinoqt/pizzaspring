@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ClienteServiceImpl implements ClienteService{
@@ -24,8 +22,6 @@ public class ClienteServiceImpl implements ClienteService{
 
     @Autowired
     private OrdineMapper ordineMapper;
-
-    private Long clienteID;
 
     @Override
     @Transactional
@@ -46,7 +42,7 @@ public class ClienteServiceImpl implements ClienteService{
 
         Cliente savedCliente = clienteRepository.save(cliente);
 
-        return clienteMapper.clienteToDTO(cliente);
+        return clienteMapper.clienteToDTO(savedCliente);
     }
 
     @Override
@@ -66,14 +62,12 @@ public class ClienteServiceImpl implements ClienteService{
 
     @Override
     public Collection<OrdineDTO> getOrdiniByCliente(Long idCliente) {
-        // 1. Fetch the entity
         Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(() -> new RuntimeException("Cliente non trovato"));
 
-        // 2. Map the internal entities to DTOs
         return cliente.getOrdini().stream()
                 .map(ordine -> ordineMapper.ordineToDTO(ordine))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

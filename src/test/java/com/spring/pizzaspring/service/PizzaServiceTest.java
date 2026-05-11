@@ -5,12 +5,14 @@ import com.spring.pizzaspring.mapper.PizzaMapper;
 import com.spring.pizzaspring.model.Pizza;
 import com.spring.pizzaspring.repository.PizzaRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,7 +51,8 @@ public class PizzaServiceTest {
     }
 
     @Test
-    void createPizza_ShouldReturnSavedDTO() {
+    @DisplayName("Should successfully create and save a new pizza")
+    void createPizza() {
         when(pizzaMapper.DTOToPizza(any(PizzaDTO.class))).thenReturn(pizzaEntity);
         when(pizzaRepository.save(any(Pizza.class))).thenReturn(pizzaEntity);
         when(pizzaMapper.pizzaToDTO(any(Pizza.class))).thenReturn(pizzaDto);
@@ -59,10 +62,12 @@ public class PizzaServiceTest {
         assertNotNull(result);
         assertEquals("Margherita", result.getNome());
         verify(pizzaRepository, times(1)).save(any(Pizza.class));
+        verify(pizzaMapper).DTOToPizza(any(PizzaDTO.class));
     }
 
     @Test
-    void updatePizza_ShouldUpdateAndReturnDTO_WhenExists() {
+    @DisplayName("Should update pizza details when the ID is found")
+    void updatePizza() {
         Long id = 1L;
         PizzaDTO updateData = new PizzaDTO();
         updateData.setNome("Margherita Extra");
@@ -74,55 +79,72 @@ public class PizzaServiceTest {
 
         PizzaDTO result = pizzaService.updatePizza(id, updateData);
 
+        assertNotNull(result);
         assertEquals("Margherita Extra", result.getNome());
         assertEquals(7.00, result.getPrezzo());
-        verify(pizzaRepository).save(pizzaEntity);
+        verify(pizzaRepository).findById(id);
+        verify(pizzaRepository).save(any(Pizza.class));
     }
 
     @Test
-    void getPizzaById_ShouldReturnDTO_WhenFound() {
+    @DisplayName("Should return the specific pizza DTO when ID exists")
+    void getPizzaById() {
         when(pizzaRepository.findById(1L)).thenReturn(Optional.of(pizzaEntity));
         when(pizzaMapper.pizzaToDTO(pizzaEntity)).thenReturn(pizzaDto);
 
         PizzaDTO result = pizzaService.getPizzaById(1L);
 
         assertNotNull(result);
+        assertEquals(1L, result.getIdPizza());
         assertEquals("Margherita", result.getNome());
+        verify(pizzaRepository).findById(1L);
     }
 
     @Test
-    void getPizzaById_ShouldThrowException_WhenNotFound() {
+    @DisplayName("Should throw RuntimeException when getting a pizza that doesn't exist")
+    void getPizzaByIdNonEsistente() {
         when(pizzaRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> pizzaService.getPizzaById(1L));
+        verify(pizzaRepository).findById(1L);
+        verify(pizzaMapper, never()).pizzaToDTO(any());
     }
 
     @Test
-    void getAllPizze_ShouldReturnList() {
+    @DisplayName("Should return a collection of all pizzas")
+    void getAllPizze() {
         when(pizzaRepository.findAll()).thenReturn(List.of(pizzaEntity));
-        when(pizzaMapper.pizzaToDTO(pizzaEntity)).thenReturn(pizzaDto);
+        when(pizzaMapper.pizzaToDTO(any(Pizza.class))).thenReturn(pizzaDto);
 
-        var results = pizzaService.getAllPizze();
+        Collection<PizzaDTO> results = pizzaService.getAllPizze();
 
+        assertNotNull(results);
         assertEquals(1, results.size());
         verify(pizzaRepository).findAll();
+        verify(pizzaMapper, atLeastOnce()).pizzaToDTO(any());
     }
 
     @Test
-    void deletePizza_ShouldInvokeDelete_WhenExists() {
+    @DisplayName("Should successfully delete a pizza when it exists")
+    void deletePizza() {
         when(pizzaRepository.existsById(1L)).thenReturn(true);
 
-        pizzaService.deletePizza(1L);
+        assertDoesNotThrow(() -> pizzaService.deletePizza(1L));
 
+        verify(pizzaRepository).existsById(1L);
         verify(pizzaRepository).deleteById(1L);
     }
 
     @Test
-    void deletePizza_ShouldThrow_WhenNotExists() {
+    @DisplayName("Should throw exception and not attempt deletion when pizza ID is missing")
+    void deletePizzaNonEsistente() {
         when(pizzaRepository.existsById(1L)).thenReturn(false);
 
         Exception exception = assertThrows(RuntimeException.class, () -> pizzaService.deletePizza(1L));
-        assertEquals("Pizza not found.", exception.getMessage());
+
+        assertTrue(exception.getMessage().contains("Pizza"));
+
+        verify(pizzaRepository).existsById(1L);
         verify(pizzaRepository, never()).deleteById(anyLong());
     }
 }

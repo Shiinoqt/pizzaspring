@@ -8,6 +8,7 @@ import com.spring.pizzaspring.model.Cliente;
 import com.spring.pizzaspring.model.Ordine;
 import com.spring.pizzaspring.repository.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.*;
 // Enables Mockito
 @ExtendWith(MockitoExtension.class)
 public class ClienteServiceTest {
+
     @Mock
     private OrdineMapper ordineMapper; // Add this mock
 
@@ -56,7 +58,8 @@ public class ClienteServiceTest {
     }
 
     @Test
-    void registraCliente_ShouldReturnSavedDTO() {
+    @DisplayName("Should successfully register a client and return the DTO")
+    void registraCliente() {
         // Simulating Mapper conversions and repository save
         when(clienteMapper.DTOToCliente(any(ClienteDTO.class))).thenReturn(clienteEntity);
         when(clienteRepository.save(any(Cliente.class))).thenReturn(clienteEntity);
@@ -70,11 +73,12 @@ public class ClienteServiceTest {
         assertEquals("Mario Rossi", result.getNome());
 
         // Check if save() was called
-        verify(clienteRepository).save(any(Cliente.class));
+        verify(clienteRepository, times(1)).save(any(Cliente.class));
     }
 
     @Test
-    void updateCliente_ShouldUpdateAndReturnDTO() {
+    @DisplayName("Should update client details and return the updated DTO")
+    void updateCliente() {
         // Preparing info to update
         Long id = 1L;
         ClienteDTO updateInfo = new ClienteDTO();
@@ -89,14 +93,17 @@ public class ClienteServiceTest {
         ClienteDTO result = clienteService.updateCliente(id, updateInfo);
 
         // Assert
+        assertNotNull(result);
         assertEquals("Mario Bianchi", result.getNome());
+
         // Check if "findbyid" and save was called
         verify(clienteRepository).findById(id);
         verify(clienteRepository).save(clienteEntity);
     }
 
     @Test
-    void getClienteById_ShouldReturnDTO_WhenFound() {
+    @DisplayName("Should return ClienteDTO when a valid ID is provided")
+    void getClienteById() {
         // Simulating finding by id and returning DTO
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteEntity));
         when(clienteMapper.clienteToDTO(clienteEntity)).thenReturn(clienteDto);
@@ -106,32 +113,38 @@ public class ClienteServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1L, result.getIdCliente());
+        verify(clienteRepository).findById(1L);
     }
 
     @Test
-    void getClienteById_ShouldThrowException_WhenNotFound() {
+    @DisplayName("Should throw RuntimeException when client ID does not exist")
+    void getClienteByIdNonTrovato() {
         // Simulating find by id that returns nothing
         when(clienteRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Testing if it runs into exception
         assertThrows(RuntimeException.class, () -> clienteService.getClienteById(1L));
+        verify(clienteMapper, never()).clienteToDTO(any());
     }
 
     @Test
-    void selectAll_ShouldReturnCollection() {
+    @DisplayName("Should return a collection of all clients")
+    void selectAll() {
         // Simulating findall() returns
         when(clienteRepository.findAll()).thenReturn(List.of(clienteEntity));
         when(clienteMapper.clienteToDTO(clienteEntity)).thenReturn(clienteDto);
 
-        var results = clienteService.selectAll();
+        Collection<ClienteDTO> results = clienteService.selectAll();
 
         // Assert
-        assertEquals(1, results.size());
         assertFalse(results.isEmpty());
+        assertEquals(1, results.size());
+        verify(clienteRepository).findAll();
     }
 
     @Test
-    void getOrdiniByCliente_ShouldReturnListOfDTOs() {
+    @DisplayName("Should return a list of order DTOs for a specific client")
+    void getOrdiniByCliente() {
         Long id = 1L;
 
         Ordine o1 = new Ordine();
@@ -145,27 +158,37 @@ public class ClienteServiceTest {
         when(ordineMapper.ordineToDTO(o1)).thenReturn(ordineDto);
 
         Collection<OrdineDTO> results = clienteService.getOrdiniByCliente(id);
-        System.out.println(results);
 
+        // Assert
         assertNotNull(results);
         assertEquals(1, results.size());
+        verify(clienteRepository).findById(id);
+        verify(ordineMapper, atLeastOnce()).ordineToDTO(any());
     }
 
     @Test
-    void deleteCliente_ShouldDelete_WhenExists() {
+    @DisplayName("Should successfully delete a client when they exist")
+    void deleteCliente() {
         Long id = 1L;
         when(clienteRepository.existsById(id)).thenReturn(true);
 
         clienteService.deleteCliente(id);
 
+        verify(clienteRepository).existsById(id);
         verify(clienteRepository).deleteById(id);
     }
 
     @Test
-    void deleteCliente_ShouldThrow_WhenNotExists() {
+    @DisplayName("Should throw exception and skip deletion when client does not exist")
+    void deleteClienteNonEsistente() {
+        // Simulating find by id that returns nothing
         when(clienteRepository.existsById(1L)).thenReturn(false);
 
+        // Testing if it runs into exception
         assertThrows(RuntimeException.class, () -> clienteService.deleteCliente(1L));
+
+        // Verify delete was never called
+        verify(clienteRepository).existsById(1L);
         verify(clienteRepository, never()).deleteById(anyLong());
     }
 }

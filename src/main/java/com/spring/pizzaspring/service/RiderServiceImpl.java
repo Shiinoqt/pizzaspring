@@ -1,6 +1,8 @@
 package com.spring.pizzaspring.service;
 
+import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.RiderDTO;
+import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.mapper.RiderMapper;
 import com.spring.pizzaspring.model.Rider;
 import com.spring.pizzaspring.repository.RiderRepository;
@@ -12,6 +14,8 @@ import java.util.Collection;
 
 @Service
 public class RiderServiceImpl implements RiderService{
+    @Autowired
+    private OrdineMapper ordineMapper;
 
     @Autowired
     private RiderRepository riderRepository;
@@ -44,6 +48,16 @@ public class RiderServiceImpl implements RiderService{
         Rider savedRider = riderRepository.save(rider);
 
         return riderMapper.riderToDTO(savedRider);
+    }
+
+    @Override
+    public Collection<OrdineDTO> getOrdiniByRider(Long idRider) {
+        Rider rider = riderRepository.findById(idRider)
+                .orElseThrow(() -> new RuntimeException("Rider non trovato"));
+
+        return rider.getOrdini().stream()
+                .map(ordineMapper::ordineToDTO)
+                .toList();
     }
 
     @Override
