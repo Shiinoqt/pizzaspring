@@ -22,9 +22,4 @@ public class Cliente {
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private Collection<Ordine> ordini;
-
-    public void addOrdine(Ordine ordine) {
-        this.ordini.add(ordine);
-        ordine.setCliente(this);
-    }
 }
