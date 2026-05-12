@@ -10,6 +10,6 @@ import lombok.*;
 @Entity
 @DiscriminatorValue("prioritario")
 public class OrdinePrioritario extends Ordine{
-    @Column(nullable = false)
-    private double sovrapprezzo;
+    @Column(name = "sovrapprezzo")
+    private Double sovrapprezzo = 0.0;
 }
