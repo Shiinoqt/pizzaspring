@@ -33,19 +33,21 @@ public class OrdineRepositoryTest {
 
     @Test
     void shouldSaveAndFind() {
+        // Saving cliente
         Cliente cliente = new Cliente();
         cliente.setNome("Mario Rossi");
         cliente.setIndirizzo("Via Roma 1");
         cliente.setTelefono("12345");
         clienteRepository.save(cliente);
 
+        // Saving ordine
         Ordine ordine = new Ordine();
         ordine.setCodice("ORD-001");
         ordine.setCliente(cliente);
+        ordineRepository.save(ordine);
 
-        Ordine saved = ordineRepository.save(ordine);
+        // Checks
         Optional<Ordine> found = ordineRepository.findById("ORD-001");
-
         assertTrue(found.isPresent());
         assertEquals(cliente.getNome(), found.get().getCliente().getNome());
     }
