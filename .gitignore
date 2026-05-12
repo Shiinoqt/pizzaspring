@@ -33,3 +33,5 @@ build/
 
 .env
 src/test/resources/application-test.properties
+application-test.properties
+/src/test/resources
