@@ -10,4 +10,5 @@ public interface PizzaService {
     void deletePizza(Long id);
     PizzaDTO getPizzaById(Long id);
     Collection<PizzaDTO> getAllPizze();
+    PizzaDTO patchPizzaPrice(Long id, Double newPrice);
 }

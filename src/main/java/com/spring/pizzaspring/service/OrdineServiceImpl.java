@@ -32,6 +32,11 @@ public class OrdineServiceImpl implements OrdineService{
     @Override
     public void creaOrdine(OrdineDTO dto) {
         Ordine ordine = ordineMapper.DTOToOrdine(dto);
+
+//        if (ordine.getPizzeOrdinate() == null || ordine.getPizzeOrdinate().isEmpty()) {
+//            throw new RuntimeException("Impossibile processare un ordine senza pizze");
+//        }
+
         ordineRepository.save(ordine);
     }
 

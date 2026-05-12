@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Collection;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -12,6 +12,6 @@ import java.util.Collection;
 public class OrdineDTO {
     private String codice;
     private Long idCliente;
-    private Collection<OrdinePizzaDTO> pizzeOrdinate;
+    private List<OrdinePizzaDTO> pizzeOrdinate;
     private Long idRider;
 }

@@ -61,4 +61,13 @@ public class PizzaServiceImpl implements PizzaService {
                 .map(pizzaMapper::pizzaToDTO)
                 .toList();
     }
+
+    @Override
+    public PizzaDTO patchPizzaPrice(Long id, Double newPrice) {
+        Pizza pizza = pizzaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pizza not found with id: " + id));
+        pizza.setPrezzo(newPrice);
+        Pizza updatedPizza = pizzaRepository.save(pizza);
+        return pizzaMapper.pizzaToDTO(updatedPizza);
+    }
 }
