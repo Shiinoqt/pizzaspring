@@ -3,7 +3,8 @@ package com.spring.pizzaspring.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 @ToString
 @Getter
@@ -21,5 +22,13 @@ public class Cliente {
     private String nome, indirizzo, telefono;
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Collection<Ordine> ordini;
+    private List<Ordine> ordini;
+
+    public void addOrdine(Ordine ordine) {
+        if (this.ordini == null) {
+            this.ordini = new ArrayList<>();
+        }
+        this.ordini.add(ordine);
+        ordine.setCliente(this); // Sync the "owning" side
+    }
 }

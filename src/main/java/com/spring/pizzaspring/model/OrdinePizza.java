@@ -5,6 +5,8 @@ import lombok.*;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "ordinepizza")
 public class OrdinePizza {
@@ -13,7 +15,7 @@ public class OrdinePizza {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "codice")
+    @JoinColumn(name = "ordine_codice")
     private Ordine ordine;
 
     @ManyToOne

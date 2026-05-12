@@ -1,6 +1,7 @@
 package com.spring.pizzaspring.repository;
 
 import com.spring.pizzaspring.model.*;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -14,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Transactional
 public class OrdineRepositoryTest {
 
     @Autowired
@@ -121,42 +123,53 @@ public class OrdineRepositoryTest {
     }
 
     @Test
-    void shouldDeleteOrdineAndOrdinePizze() {
+    void shouldDeleteEverything() {
+        // Save Pizza independently
+        Pizza pizza = new Pizza();
+        pizza.setNome("Margherita");
+        pizza.setDescrizione("Test Desc");
+        pizza.setPrezzo(5.0);
+        Pizza managedPizza = pizzaRepository.save(pizza);
+
+        // Save Cliente (no ordini yet)
         Cliente cliente = new Cliente();
         cliente.setNome("Test");
         cliente.setIndirizzo("Via X");
         cliente.setTelefono("123");
-        clienteRepository.save(cliente);
+        cliente.setOrdini(new java.util.ArrayList<>());
+        Cliente savedCliente = clienteRepository.saveAndFlush(cliente);
 
-        Pizza pizza = new Pizza();
-        pizza.setNome("Margherita");
-        pizza.setDescrizione("Desc");
-        pizza.setPrezzo(5.0);
-        pizzaRepository.save(pizza);
-
+        // Build and save Ordine linked to Cliente
         Ordine ordine = new Ordine();
         ordine.setCodice("ORD-DELETE-TEST");
-        ordine.setCliente(cliente);
-
-        OrdinePizza op = new OrdinePizza();
-        op.setPizza(pizza);
-        op.setQuantita(1);
-        op.setOrdine(ordine);
+        ordine.setCliente(savedCliente);
         ordine.setPizzeOrdinate(new java.util.ArrayList<>());
-        ordine.getPizzeOrdinate().add(op);
+        savedCliente.getOrdini().add(ordine);
+        clienteRepository.saveAndFlush(savedCliente); // cascades to Ordine
 
-        Ordine savedOrdine = ordineRepository.save(ordine);
-        ordineRepository.flush();
+        // Retrieve managed Ordine and attach OrdinePizza
+        Ordine managedOrdine = ordineRepository.findById("ORD-DELETE-TEST").orElseThrow();
+        OrdinePizza op = new OrdinePizza();
+        op.setPizza(managedPizza);
+        op.setQuantita(1);
+        op.setOrdine(managedOrdine);              // owning side
+        managedOrdine.getPizzeOrdinate().add(op); // inverse side
+        ordineRepository.saveAndFlush(managedOrdine);
 
-        Long ordinePizzaId = savedOrdine.getPizzeOrdinate().iterator().next().getId();
+        // Verification of IDs
+        assertTrue(ordineRepository.existsById("ORD-DELETE-TEST"));
+        Long opId = managedOrdine.getPizzeOrdinate().get(0).getId();
+        assertNotNull(opId);
 
-        assertNotNull(ordinePizzaId, "The ID should not be null after saving");
+        //Delete the Cliente directly
+        // This will trigger CascadeType.REMOVE (or ALL) on ordini
+        clienteRepository.delete(savedCliente);
+        clienteRepository.flush();
 
-        ordineRepository.delete(savedOrdine);
-        ordineRepository.flush();
-
-        assertFalse(ordineRepository.existsById("ORD-DELETE-TEST"));
-        assertFalse(ordinePizzaRepository.existsById(ordinePizzaId));
-        assertTrue(pizzaRepository.existsById(pizza.getIdPizza()));
+        // Assertions
+        assertFalse(clienteRepository.existsById(savedCliente.getIdCliente()), "Cliente should be gone");
+        assertFalse(ordineRepository.existsById("ORD-DELETE-TEST"), "Ordine should be gone");
+        assertFalse(ordinePizzaRepository.existsById(opId), "OrdinePizza should be gone");
+        assertTrue(pizzaRepository.existsById(managedPizza.getIdPizza()), "Pizza should remain");
     }
 }

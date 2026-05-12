@@ -3,7 +3,7 @@ package com.spring.pizzaspring.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Collection;
+import java.util.List;
 
 @Getter //Lombok annotation
 @Setter
@@ -21,8 +21,8 @@ public class Ordine {
     @JoinColumn(name = "idCliente", nullable = false) // Creates column "idCliente" that points to the class primary key
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "ordine", cascade = CascadeType.PERSIST, orphanRemoval = true) // One "order" is associated to many pizzas
-    private Collection<OrdinePizza> pizzeOrdinate;
+    @OneToMany(mappedBy = "ordine", cascade = CascadeType.ALL, orphanRemoval = true) // One "order" is associated to many pizzas
+    private List<OrdinePizza> pizzeOrdinate;
 
     @ManyToOne // Many "order" can be associated to one rider
     @JoinColumn(name = "idRider") // Creates column "idRider" that points to the class primary key
