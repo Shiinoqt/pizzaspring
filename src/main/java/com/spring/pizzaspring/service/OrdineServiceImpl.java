@@ -30,9 +30,6 @@ public class OrdineServiceImpl implements OrdineService{
     private OrdinePizzaRepository ordinePizzaRepository;
 
     @Autowired
-    private OrdinePizzaMapper ordinePizzaMapper;
-
-    @Autowired
     private OrdineMapper ordineMapper;
 
     @Autowired
@@ -112,6 +109,43 @@ public class OrdineServiceImpl implements OrdineService{
         ordine.setRider(rider);
         ordineRepository.save(ordine);
     }
+
+    @Override
+    @Transactional
+    public void modificaOrdine(String codiceOrdine, OrdineDTO newOrdineDTO) {
+        Ordine ordine = ordineRepository.findById(codiceOrdine)
+                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+
+        validateOrdine(newOrdineDTO);
+
+        if (newOrdineDTO.getIdCliente() != null) {
+            Cliente cliente = clienteRepository.findById(newOrdineDTO.getIdCliente())
+                    .orElseThrow(() -> new RuntimeException("Cliente non trovato"));
+            ordine.setCliente(cliente);
+        }
+
+        ordine.getPizzeOrdinate().clear();
+        ordineRepository.saveAndFlush(ordine); // Force the delete of old pizzas
+
+        // Save the new pizza list
+        saveOrdiniPizza(ordine, newOrdineDTO.getPizzeOrdinate());
+    }
+    @Override
+    @Transactional
+    public void patchPizzeOnly(String codiceOrdine, List<OrdinePizzaDTO> nuovePizze) {
+        Ordine ordine = ordineRepository.findById(codiceOrdine)
+                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+
+        if (nuovePizze == null || nuovePizze.isEmpty()) {
+            throw new IllegalArgumentException("L'ordine deve contenere almeno una pizza");
+        }
+
+        ordine.getPizzeOrdinate().clear();
+        ordineRepository.saveAndFlush(ordine);
+
+        saveOrdiniPizza(ordine, nuovePizze);
+    }
+
 
     @Override
     public Double calcoloTotale(String codiceOrdine) {

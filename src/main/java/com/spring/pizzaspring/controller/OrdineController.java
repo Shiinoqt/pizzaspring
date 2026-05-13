@@ -1,6 +1,7 @@
 package com.spring.pizzaspring.controller;
 
 import com.spring.pizzaspring.dto.OrdineDTO;
+import com.spring.pizzaspring.dto.OrdinePizzaDTO;
 import com.spring.pizzaspring.dto.OrdinePrioritarioDTO;
 import com.spring.pizzaspring.service.OrdineService;
 import jakarta.validation.Valid;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,6 +27,16 @@ public class OrdineController {
     @PostMapping(path = "/prioritari", consumes = "application/json")
     public void caricaPrio(@RequestBody @Valid OrdinePrioritarioDTO ordinePrioritarioDTO) {
         service.creaOrdinePrioritario(ordinePrioritarioDTO);
+    }
+
+    @PutMapping("/{codiceOrdine}")
+    public void modificaOrdine(@PathVariable String codiceOrdine, @RequestBody @Valid OrdineDTO newOrdine) {
+        service.modificaOrdine(codiceOrdine, newOrdine);
+    }
+
+    @PatchMapping("/{codiceOrdine}")
+    public void patchPizze(@PathVariable String codiceOrdine, @RequestBody List<OrdinePizzaDTO> nuovePizze) {
+        service.patchPizzeOnly(codiceOrdine, nuovePizze);
     }
 
     @PatchMapping(path = "/{codiceOrdine}/assegna-rider/{idRider}")

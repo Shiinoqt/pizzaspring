@@ -2,11 +2,18 @@ package com.spring.pizzaspring.service;
 
 import com.spring.pizzaspring.dto.ClienteDTO;
 import com.spring.pizzaspring.dto.OrdineDTO;
+import com.spring.pizzaspring.dto.OrdinePizzaDTO;
+import com.spring.pizzaspring.dto.PizzaDTO;
 import com.spring.pizzaspring.mapper.ClienteMapper;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.model.Cliente;
 import com.spring.pizzaspring.model.Ordine;
+import com.spring.pizzaspring.model.OrdinePizza;
+import com.spring.pizzaspring.model.Pizza;
 import com.spring.pizzaspring.repository.ClienteRepository;
+import com.spring.pizzaspring.repository.OrdinePizzaRepository;
+import com.spring.pizzaspring.repository.OrdineRepository;
+import com.spring.pizzaspring.repository.PizzaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +44,14 @@ public class ClienteServiceTest {
     @Mock
     private ClienteMapper clienteMapper;
 
+    @Mock
+    private OrdineRepository ordineRepository;
+
+    @Mock
+    private PizzaRepository pizzaRepository;
+    @Mock
+    private OrdinePizzaRepository ordinePizzaRepository;
+
     // We created the mocks of the dependencies used in "ClienteServiceImpl" and inject it into real service
     @InjectMocks
     private ClienteServiceImpl clienteService;
@@ -50,30 +66,58 @@ public class ClienteServiceTest {
         clienteEntity.setIdCliente(1L);
         clienteEntity.setNome("Mario Rossi");
         clienteEntity.setIndirizzo("Via Roma 1");
+        clienteEntity.setOrdini(new ArrayList<>());
 
         clienteDto = new ClienteDTO();
         clienteDto.setIdCliente(1L);
         clienteDto.setNome("Mario Rossi");
         clienteDto.setIndirizzo("Via Roma 1");
+        clienteDto.setOrdini(new ArrayList<>());
     }
 
     @Test
-    @DisplayName("Should successfully register a client and return the DTO")
-    void registraCliente() {
-        // Simulating Mapper conversions and repository save
+    @DisplayName("Should successfully register a client with nested orders and pizzas")
+    void registraClienteCompleto() {
+        // Setup Pizza
+        Pizza pizzaEntity = new Pizza();
+        pizzaEntity.setIdPizza(10L);
+        pizzaEntity.setNome("Margherita");
+
+        OrdinePizzaDTO ordinePizzaDto = new OrdinePizzaDTO();
+        ordinePizzaDto.setIdPizza(10L);
+        ordinePizzaDto.setQuantita(2);
+
+        // Setup OrdineDTO
+        OrdineDTO ordineDto = new OrdineDTO();
+        ordineDto.setCodice("ORD-NEW-100");
+        ordineDto.setPizzeOrdinate(List.of(ordinePizzaDto));
+
+        // Attach order to cliente
+        clienteDto.setOrdini(List.of(ordineDto));
+
+        // Setup Ordine entity
+        Ordine ordineEntity = new Ordine();
+        ordineEntity.setCodice("ORD-NEW-100");
+
+        // Stubbing
         when(clienteMapper.DTOToCliente(any(ClienteDTO.class))).thenReturn(clienteEntity);
         when(clienteRepository.save(any(Cliente.class))).thenReturn(clienteEntity);
+        when(ordineMapper.DTOToOrdine(any(OrdineDTO.class))).thenReturn(ordineEntity);
+        when(ordineRepository.save(any(Ordine.class))).thenReturn(ordineEntity);
+        when(pizzaRepository.findById(10L)).thenReturn(Optional.of(pizzaEntity));
         when(clienteMapper.clienteToDTO(any(Cliente.class))).thenReturn(clienteDto);
 
-        // Registering Cliente
+        // Execute
         ClienteDTO result = clienteService.registraCliente(clienteDto);
 
-        // Assert
+        // Assertions
         assertNotNull(result);
-        assertEquals("Mario Rossi", result.getNome());
 
-        // Check if save() was called
-        verify(clienteRepository, times(1)).save(any(Cliente.class));
+        // Verify all saves were called
+        verify(clienteRepository).save(any(Cliente.class));
+        verify(ordineRepository).save(any(Ordine.class));
+        verify(pizzaRepository).findById(10L);
+        verify(ordinePizzaRepository).save(any(OrdinePizza.class));
     }
 
     @Test

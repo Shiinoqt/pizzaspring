@@ -1,9 +1,11 @@
 package com.spring.pizzaspring.service;
 
 import com.spring.pizzaspring.dto.OrdineDTO;
+import com.spring.pizzaspring.dto.OrdinePizzaDTO;
 import com.spring.pizzaspring.dto.OrdinePrioritarioDTO;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public interface OrdineService {
@@ -11,6 +13,8 @@ public interface OrdineService {
     void creaOrdine(OrdineDTO dto);
     void creaOrdinePrioritario(OrdinePrioritarioDTO dto);
     void assegnaRider(String codiceOrdine, Long idRider);
+    void modificaOrdine(String codiceOrdine, OrdineDTO newOrdineDTO);
+    void patchPizzeOnly(String codiceOrdine, List<OrdinePizzaDTO> nuovePizze);
     Double calcoloTotale(String codiceOrdine);
     OrdineDTO getOrdineById(String id);
     Collection<OrdineDTO> selectAll();

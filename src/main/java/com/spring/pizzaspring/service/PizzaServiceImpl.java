@@ -21,6 +21,9 @@ public class PizzaServiceImpl implements PizzaService {
 
     @Override
     public PizzaDTO createPizza(PizzaDTO pizzaDTO) {
+        if (pizzaRepository.existsByNome(pizzaDTO.getNome())) {
+            throw new RuntimeException("Errore: Una pizza con il nome '" + pizzaDTO.getNome() + "' è già presente a sistema");
+        }
         Pizza pizza = pizzaMapper.DTOToPizza(pizzaDTO);
         Pizza savedPizza = pizzaRepository.save(pizza);
         return pizzaMapper.pizzaToDTO(savedPizza);

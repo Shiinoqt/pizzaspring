@@ -1,5 +1,6 @@
 package com.spring.pizzaspring.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -8,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrdinePizzaDTO {
+    @JsonIgnore
     private Long id;
 
     @NotNull(message = "ID Pizza richiesto")
