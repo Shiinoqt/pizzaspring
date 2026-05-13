@@ -1,12 +1,14 @@
 package com.spring.pizzaspring.service;
 
+import com.spring.pizzaspring.dto.ClienteDTO;
 import com.spring.pizzaspring.dto.OrdineDTO;
+import com.spring.pizzaspring.dto.OrdinePizzaDTO;
 import com.spring.pizzaspring.dto.OrdinePrioritarioDTO;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.mapper.OrdinePrioritarioMapper;
 import com.spring.pizzaspring.model.*;
-import com.spring.pizzaspring.repository.OrdineRepository;
-import com.spring.pizzaspring.repository.RiderRepository;
+import com.spring.pizzaspring.repository.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +26,14 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class OrdineServiceTest {
+    @Mock
+    private PizzaRepository pizzaRepository;
+
+    @Mock
+    private OrdinePizzaRepository ordinePizzaRepository;
+
+    @Mock
+    private ClienteRepository clienteRepository;
 
     @Mock
     private OrdineRepository ordineRepository;
@@ -40,28 +50,83 @@ public class OrdineServiceTest {
     @InjectMocks
     private OrdineServiceImpl service;
 
+    private Cliente clienteEntity;
+    private ClienteDTO clienteDto;
+
+    // Initializes reusable "Cliente" objects before every test
+    @BeforeEach
+    void setUp() {
+        clienteEntity = new Cliente();
+        clienteEntity.setIdCliente(1L);
+        clienteEntity.setNome("Mario Rossi");
+        clienteEntity.setIndirizzo("Via Roma 1");
+
+        clienteDto = new ClienteDTO();
+        clienteDto.setIdCliente(1L);
+        clienteDto.setNome("Mario Rossi");
+        clienteDto.setIndirizzo("Via Roma 1");
+    }
     @Test
-    @DisplayName("Should successfully save a standard order")
+    @DisplayName("Should successfully save a standard order and its pizzas")
     void creaOrdine() {
+        Long clienteId = 1L;
+        Long pizzaId = 10L;
+
+        OrdinePizzaDTO pizzaDto = new OrdinePizzaDTO();
+        pizzaDto.setIdPizza(pizzaId);
+        pizzaDto.setQuantita(2);
+
         OrdineDTO dto = new OrdineDTO();
+        dto.setIdCliente(clienteId);
+        dto.setPizzeOrdinate(List.of(pizzaDto));
+
         Ordine entity = new Ordine();
+        Pizza pizzaEntity = new Pizza();
+
+        when(clienteRepository.findById(clienteId)).thenReturn(Optional.of(clienteEntity));
         when(ordineMapper.DTOToOrdine(dto)).thenReturn(entity);
+        when(ordineRepository.save(entity)).thenReturn(entity);
+        when(pizzaRepository.findById(pizzaId)).thenReturn(Optional.of(pizzaEntity));
 
         service.creaOrdine(dto);
 
         verify(ordineRepository, times(1)).save(entity);
+        verify(ordinePizzaRepository, times(1)).save(any(OrdinePizza.class));
+        assertEquals(clienteEntity, entity.getCliente(), "The entity should have client assigned");
+        verify(clienteRepository).findById(clienteId);
+        verify(pizzaRepository).findById(pizzaId);
     }
 
     @Test
-    @DisplayName("Should successfully save a priority order")
+    @DisplayName("Should successfully save a priority order and its pizzas")
     void creaOrdinePrioritario() {
+        Long clienteId = 1L;
+        Long pizzaId = 20L;
+
+        OrdinePizzaDTO pizzaDto = new OrdinePizzaDTO();
+        pizzaDto.setIdPizza(pizzaId);
+        pizzaDto.setQuantita(1);
+
         OrdinePrioritarioDTO dto = new OrdinePrioritarioDTO();
+        dto.setIdCliente(clienteId);
+        dto.setSovrapprezzo(3.0);
+        dto.setPizzeOrdinate(List.of(pizzaDto));
+
         OrdinePrioritario entity = new OrdinePrioritario();
+        Pizza pizzaEntity = new Pizza();
+
+        when(clienteRepository.findById(clienteId)).thenReturn(Optional.of(clienteEntity));
         when(ordinePrioritarioMapper.DTOToOrdineprioritario(dto)).thenReturn(entity);
+        when(ordineRepository.save(entity)).thenReturn(entity);
+        when(pizzaRepository.findById(pizzaId)).thenReturn(Optional.of(pizzaEntity));
 
         service.creaOrdinePrioritario(dto);
 
         verify(ordineRepository, times(1)).save(entity);
+        verify(ordinePizzaRepository, times(1)).save(any(OrdinePizza.class));
+        assertEquals(clienteEntity, entity.getCliente(), "The priority order should be linked to the correct client");
+        verify(clienteRepository).findById(clienteId);
+        verify(pizzaRepository).findById(pizzaId);
     }
 
     @Test

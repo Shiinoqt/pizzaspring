@@ -1,24 +1,36 @@
 package com.spring.pizzaspring.service;
 
 import com.spring.pizzaspring.dto.OrdineDTO;
+import com.spring.pizzaspring.dto.OrdinePizzaDTO;
 import com.spring.pizzaspring.dto.OrdinePrioritarioDTO;
 import com.spring.pizzaspring.mapper.OrdineMapper;
+import com.spring.pizzaspring.mapper.OrdinePizzaMapper;
 import com.spring.pizzaspring.mapper.OrdinePrioritarioMapper;
 import com.spring.pizzaspring.model.*;
-import com.spring.pizzaspring.repository.OrdineRepository;
-import com.spring.pizzaspring.repository.RiderRepository;
+import com.spring.pizzaspring.repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class OrdineServiceImpl implements OrdineService{
+    @Autowired
+    private ClienteRepository clienteRepository;
 
     @Autowired
     private OrdineRepository ordineRepository;
+
+    @Autowired
+    private OrdinePizzaRepository ordinePizzaRepository;
+
+    @Autowired
+    private OrdinePizzaMapper ordinePizzaMapper;
 
     @Autowired
     private OrdineMapper ordineMapper;
@@ -29,21 +41,66 @@ public class OrdineServiceImpl implements OrdineService{
     @Autowired
     private RiderRepository riderRepository;
 
-    @Override
-    public void creaOrdine(OrdineDTO dto) {
-        Ordine ordine = ordineMapper.DTOToOrdine(dto);
+    @Autowired
+    private PizzaRepository pizzaRepository;
 
-//        if (ordine.getPizzeOrdinate() == null || ordine.getPizzeOrdinate().isEmpty()) {
-//            throw new RuntimeException("Impossibile processare un ordine senza pizze");
-//        }
+    private Cliente validateOrdine(OrdineDTO dto) {
+        // Check id cliente nell'ordine
+        if (dto.getIdCliente() == null) {
+            throw new IllegalArgumentException("Ordine senza cliente");
+        }
 
-        ordineRepository.save(ordine);
+        // Check esistenza del cliente nel db
+        Cliente cliente = clienteRepository.findById(dto.getIdCliente())
+                .orElseThrow(() -> new RuntimeException("Cliente not found."));
+
+        // Check presenza pizze
+        if (dto.getPizzeOrdinate() == null || dto.getPizzeOrdinate().isEmpty()) {
+            throw new IllegalArgumentException("Ordine senza pizze");
+        }
+
+        return cliente;
+    }
+
+    private void saveOrdiniPizza(Ordine ordine, List<OrdinePizzaDTO> pizze) {
+        for (OrdinePizzaDTO OPD : pizze) {
+            OrdinePizza newOP = new OrdinePizza();
+            Pizza pizza = pizzaRepository.findById(OPD.getIdPizza())
+                    .orElseThrow(() -> new RuntimeException("Pizza non trovata"));
+
+            newOP.setPizza(pizza);
+            newOP.setQuantita(OPD.getQuantita());
+            newOP.setOrdine(ordine);
+
+            ordinePizzaRepository.save(newOP);
+        }
     }
 
     @Override
+    @Transactional
+    public void creaOrdine(OrdineDTO dto) {
+        Cliente cliente = validateOrdine(dto);
+
+        Ordine ordine = ordineMapper.DTOToOrdine(dto);
+        ordine.setCliente(cliente);
+        Ordine savedOrdine = ordineRepository.save(ordine);
+
+        saveOrdiniPizza(savedOrdine, dto.getPizzeOrdinate());
+    }
+
+    @Override
+    @Transactional
     public void creaOrdinePrioritario(OrdinePrioritarioDTO dto) {
+        Cliente cliente = validateOrdine(dto);
+        if (dto.getSovrapprezzo() <= 0) {
+            throw new IllegalArgumentException("Sovrapprezzo deve essere maggiore di 0");
+        }
+
         OrdinePrioritario ordinePrioritario = ordinePrioritarioMapper.DTOToOrdineprioritario(dto);
-        ordineRepository.save(ordinePrioritario);
+        ordinePrioritario.setCliente(cliente);
+        OrdinePrioritario savedOrdinePrio = ordineRepository.save(ordinePrioritario);
+
+        saveOrdiniPizza(savedOrdinePrio, dto.getPizzeOrdinate());
     }
 
     @Override
@@ -110,3 +167,5 @@ public class OrdineServiceImpl implements OrdineService{
         ordineRepository.deleteById(id);
     }
 }
+
+

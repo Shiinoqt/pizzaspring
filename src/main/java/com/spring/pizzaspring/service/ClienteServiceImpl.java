@@ -5,7 +5,9 @@ import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.mapper.ClienteMapper;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.model.Cliente;
+import com.spring.pizzaspring.model.Ordine;
 import com.spring.pizzaspring.repository.ClienteRepository;
+import com.spring.pizzaspring.repository.OrdineRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ public class ClienteServiceImpl implements ClienteService{
     private ClienteRepository clienteRepository;
 
     @Autowired
+    private OrdineRepository ordineRepository;
+
+    @Autowired
     private ClienteMapper clienteMapper;
 
     @Autowired
@@ -26,8 +31,20 @@ public class ClienteServiceImpl implements ClienteService{
     @Override
     @Transactional
     public ClienteDTO registraCliente(ClienteDTO clienteDTO) {
+//        if (clienteDTO.getOrdini() == null || clienteDTO.getOrdini().isEmpty()) {
+//            throw new IllegalArgumentException("Impossibile registrare un cliente senza ordini");
+//        }
+        // Mapping and saving cliente
         Cliente cliente = clienteMapper.DTOToCliente(clienteDTO);
         Cliente savedCliente = clienteRepository.save(cliente);
+
+        // For each ordine in the cliente set it and saves it to this
+//        for (OrdineDTO ordineDTO : clienteDTO.getOrdini()) {
+//            Ordine ordine = ordineMapper.DTOToOrdine(ordineDTO);
+//            ordine.setCliente(savedCliente);
+//            ordineRepository.save(ordine);
+//        }
+
         return clienteMapper.clienteToDTO(savedCliente);
     }
 

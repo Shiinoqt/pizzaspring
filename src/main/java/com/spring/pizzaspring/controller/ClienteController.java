@@ -15,7 +15,7 @@ public class ClienteController {
     @Autowired
     private ClienteService service;
 
-    @PostMapping(path = "/", consumes = "application/json")
+    @PostMapping(path = "/", consumes = "application/json", produces = "application/json")
     public ClienteDTO registra(@RequestBody ClienteDTO clienteDTO) {
         return service.registraCliente(clienteDTO);
     }

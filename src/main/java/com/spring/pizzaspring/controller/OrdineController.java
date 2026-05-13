@@ -3,6 +3,7 @@ package com.spring.pizzaspring.controller;
 import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.OrdinePrioritarioDTO;
 import com.spring.pizzaspring.service.OrdineService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,12 +18,12 @@ public class OrdineController {
     private OrdineService service;
 
     @PostMapping(path = "/", consumes = "application/json")
-    public void carica(@RequestBody OrdineDTO ordineDTO) {
+    public void carica(@RequestBody @Valid OrdineDTO ordineDTO) {
         service.creaOrdine(ordineDTO);
     }
 
     @PostMapping(path = "/prioritari", consumes = "application/json")
-    public void caricaPrio(@RequestBody OrdinePrioritarioDTO ordinePrioritarioDTO) {
+    public void caricaPrio(@RequestBody @Valid OrdinePrioritarioDTO ordinePrioritarioDTO) {
         service.creaOrdinePrioritario(ordinePrioritarioDTO);
     }
 

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/pizza")
@@ -24,8 +25,9 @@ public class PizzaController {
         return service.updatePizza(id, pizzaDTO);
     }
 
-    @PatchMapping(path = "/{id}/price", produces = "application/json")
-    public PizzaDTO aggiornaPrezzo(@PathVariable Long id, @RequestParam Double price) {
+    @PatchMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
+    public PizzaDTO aggiornaPrezzo(@PathVariable Long id, @RequestBody Map<String, Double> body) {
+        Double price = body.get("prezzo");
         return service.patchPizzaPrice(id, price);
     }
 
