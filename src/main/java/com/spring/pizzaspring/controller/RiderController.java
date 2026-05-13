@@ -20,7 +20,7 @@ public class RiderController {
         return service.registraRider(riderDTO);
     }
 
-    @GetMapping(path = "/", produces = "application/json")
+    @GetMapping(produces = "application/json")
     public Collection<RiderDTO> getAll() {
         return service.selectAll();
     }

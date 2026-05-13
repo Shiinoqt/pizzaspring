@@ -5,6 +5,7 @@ import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -42,7 +43,8 @@ public class ClienteController {
     }
 
     @DeleteMapping(path = "/{id}")
-    public void eliminaPerId(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminaPerId(@PathVariable Long id) {
         service.deleteCliente(id);
+        return ResponseEntity.noContent().build();
     }
 }

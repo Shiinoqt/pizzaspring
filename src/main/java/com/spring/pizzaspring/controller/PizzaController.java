@@ -2,6 +2,8 @@ package com.spring.pizzaspring.controller;
 
 import com.spring.pizzaspring.dto.PizzaDTO;
 import com.spring.pizzaspring.service.PizzaService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,10 +27,11 @@ public class PizzaController {
         return service.updatePizza(id, pizzaDTO);
     }
 
+    public record PatchPrezzoDTO(@NotNull Double prezzo) {}
+
     @PatchMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
-    public PizzaDTO aggiornaPrezzo(@PathVariable Long id, @RequestBody Map<String, Double> body) {
-        Double price = body.get("prezzo");
-        return service.patchPizzaPrice(id, price);
+    public PizzaDTO aggiornaPrezzo(@PathVariable Long id, @RequestBody @Valid PatchPrezzoDTO body) {
+        return service.patchPizzaPrice(id, body.prezzo());
     }
 
     @GetMapping(path = "/{id}", produces = "application/json")
@@ -36,7 +39,7 @@ public class PizzaController {
         return service.getPizzaById(id);
     }
 
-    @GetMapping(path = "/", produces = "application/json")
+    @GetMapping(produces = "application/json")
     public Collection<PizzaDTO> getAll() {
         return service.getAllPizze();
     }
