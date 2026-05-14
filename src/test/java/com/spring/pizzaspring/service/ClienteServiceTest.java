@@ -4,6 +4,7 @@ import com.spring.pizzaspring.component.SaveOrdiniPizzaComponent;
 import com.spring.pizzaspring.dto.ClienteDTO;
 import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.OrdinePizzaDTO;
+import com.spring.pizzaspring.exceptions.InvalidOrderException;
 import com.spring.pizzaspring.mapper.ClienteMapper;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.model.Cliente;
@@ -99,7 +100,7 @@ public class ClienteServiceTest {
     @DisplayName("Should throw exception when registering a client without orders")
     void registraClienteSenzaOrdini() {
         // clienteDto already has empty ordini from setUp
-        assertThrows(IllegalArgumentException.class, () -> clienteService.registraCliente(clienteDto));
+        assertThrows(InvalidOrderException.class, () -> clienteService.registraCliente(clienteDto));
         verify(clienteRepository, never()).save(any());
     }
 

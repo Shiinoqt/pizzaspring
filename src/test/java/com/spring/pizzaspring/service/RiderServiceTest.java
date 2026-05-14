@@ -2,6 +2,7 @@ package com.spring.pizzaspring.service;
 
 import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.RiderDTO;
+import com.spring.pizzaspring.exceptions.NotFoundException;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.mapper.RiderMapper;
 import com.spring.pizzaspring.model.Ordine;
@@ -83,8 +84,7 @@ public class RiderServiceTest {
     void getRiderByIdNonEsistente() {
         when(riderRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(RuntimeException.class, () -> riderService.getRiderById(1L));
-        assertEquals("Rider non trovato", exception.getMessage());
+        Exception exception = assertThrows(NotFoundException.class, () -> riderService.getRiderById(1L));
     }
 
     @Test
