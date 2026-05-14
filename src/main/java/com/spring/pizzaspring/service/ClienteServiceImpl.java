@@ -67,6 +67,10 @@ public class ClienteServiceImpl implements ClienteService{
             }
         }
 
+        if (clienteRepository.existsById(clienteDTO.getIdCliente())) {
+            throw new IllegalArgumentException("Cliente già registrato");
+        }
+
         // Mapping and saving cliente
         Cliente cliente = clienteMapper.DTOToCliente(clienteDTO);
         Cliente savedCliente = clienteRepository.save(cliente);

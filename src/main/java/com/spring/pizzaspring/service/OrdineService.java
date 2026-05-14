@@ -10,11 +10,11 @@ import java.util.Map;
 
 public interface OrdineService {
 
-    void creaOrdine(OrdineDTO dto);
-    void creaOrdinePrioritario(OrdinePrioritarioDTO dto);
-    void assegnaRider(String codiceOrdine, Long idRider);
-    void modificaOrdine(String codiceOrdine, OrdineDTO newOrdineDTO);
-    void patchPizzeOnly(String codiceOrdine, List<OrdinePizzaDTO> nuovePizze);
+    OrdineDTO creaOrdine(OrdineDTO dto);
+    OrdineDTO creaOrdinePrioritario(OrdinePrioritarioDTO dto);
+    OrdineDTO assegnaRider(String codiceOrdine, Long idRider);
+    OrdineDTO modificaOrdine(String codiceOrdine, OrdineDTO newOrdineDTO);
+    OrdineDTO patchPizzeOnly(String codiceOrdine, List<OrdinePizzaDTO> nuovePizze);
     Double calcoloTotale(String codiceOrdine);
     OrdineDTO getOrdineById(String id);
     Collection<OrdineDTO> selectAll();

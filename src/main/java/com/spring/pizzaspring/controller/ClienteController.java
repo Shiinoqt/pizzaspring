@@ -5,6 +5,7 @@ import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,28 +19,33 @@ public class ClienteController {
     private ClienteService service;
 
     @PostMapping(path = "/", consumes = "application/json", produces = "application/json")
-    public ClienteDTO registra(@RequestBody @Valid ClienteDTO clienteDTO) {
-        return service.registraCliente(clienteDTO);
+    public ResponseEntity<ClienteDTO> registra(@RequestBody @Valid ClienteDTO clienteDTO) {
+        ClienteDTO dto = service.registraCliente(clienteDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     @PutMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
-    public ClienteDTO aggiorna(@PathVariable Long id, @RequestBody ClienteDTO clienteDTO) {
-        return service.updateCliente(id, clienteDTO);
+    public ResponseEntity<ClienteDTO> aggiorna(@PathVariable Long id, @RequestBody ClienteDTO clienteDTO) {
+        ClienteDTO dto = service.updateCliente(id, clienteDTO);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping(path = "/{id}/ordini", produces = "application/json")
-    public Collection<OrdineDTO> getOrdini(@PathVariable Long id) {
-        return service.getOrdiniByCliente(id);
+    public ResponseEntity<Collection<OrdineDTO>> getOrdini(@PathVariable Long id) {
+        Collection<OrdineDTO> response = service.getOrdiniByCliente(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(produces = "application/json")
-    public Collection<ClienteDTO> getClienti() {
-        return service.selectAll();
+    public ResponseEntity<Collection<ClienteDTO>> getClienti() {
+        Collection<ClienteDTO> response = service.selectAll();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(path = "/{id}", produces = "application/json")
-    public ClienteDTO getClienteById(@PathVariable Long id) {
-        return service.getClienteById(id);
+    public ResponseEntity<ClienteDTO> getClienteById(@PathVariable Long id) {
+        ClienteDTO dto = service.getClienteById(id);
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping(path = "/{id}")

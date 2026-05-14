@@ -75,7 +75,7 @@ public class OrdineServiceImpl implements OrdineService{
 
     @Override
     @Transactional
-    public void creaOrdine(OrdineDTO dto) {
+    public OrdineDTO creaOrdine(OrdineDTO dto) {
         Cliente cliente = validateOrdine(dto);
 
         Ordine ordine = ordineMapper.DTOToOrdine(dto);
@@ -83,36 +83,40 @@ public class OrdineServiceImpl implements OrdineService{
         Ordine savedOrdine = ordineRepository.save(ordine);
 
         saveOrdiniPizza(savedOrdine, dto.getPizzeOrdinate());
+        return ordineMapper.ordineToDTO(ordine);
     }
 
     @Override
     @Transactional
-    public void creaOrdinePrioritario(OrdinePrioritarioDTO dto) {
-        Cliente cliente = validateOrdine(dto);
+    public OrdineDTO creaOrdinePrioritario(OrdinePrioritarioDTO dto) {
         if (dto.getSovrapprezzo() <= 0) {
             throw new IllegalArgumentException("Sovrapprezzo deve essere maggiore di 0");
         }
+        Cliente cliente = validateOrdine(dto);
 
         OrdinePrioritario ordinePrioritario = ordinePrioritarioMapper.DTOToOrdineprioritario(dto);
         ordinePrioritario.setCliente(cliente);
+
         OrdinePrioritario savedOrdinePrio = ordineRepository.save(ordinePrioritario);
 
         saveOrdiniPizza(savedOrdinePrio, dto.getPizzeOrdinate());
+        return ordineMapper.ordineToDTO(savedOrdinePrio);
     }
 
     @Override
-    public void assegnaRider(String codiceOrdine, Long idRider) {
+    public OrdineDTO assegnaRider(String codiceOrdine, Long idRider) {
         Ordine ordine = ordineRepository.findById(codiceOrdine)
                 .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
         Rider rider = riderRepository.findById(idRider)
                 .orElseThrow(() -> new RuntimeException("Rider non trovato"));
         ordine.setRider(rider);
         ordineRepository.save(ordine);
+        return ordineMapper.ordineToDTO(ordine);
     }
 
     @Override
     @Transactional
-    public void modificaOrdine(String codiceOrdine, OrdineDTO newOrdineDTO) {
+    public OrdineDTO modificaOrdine(String codiceOrdine, OrdineDTO newOrdineDTO) {
         Ordine ordine = ordineRepository.findById(codiceOrdine)
                 .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
 
@@ -129,10 +133,11 @@ public class OrdineServiceImpl implements OrdineService{
 
         // Save the new pizza list
         saveOrdiniPizza(ordine, newOrdineDTO.getPizzeOrdinate());
+        return ordineMapper.ordineToDTO(ordine);
     }
     @Override
     @Transactional
-    public void patchPizzeOnly(String codiceOrdine, List<OrdinePizzaDTO> nuovePizze) {
+    public OrdineDTO patchPizzeOnly(String codiceOrdine, List<OrdinePizzaDTO> nuovePizze) {
         Ordine ordine = ordineRepository.findById(codiceOrdine)
                 .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
 
@@ -144,6 +149,7 @@ public class OrdineServiceImpl implements OrdineService{
         ordineRepository.saveAndFlush(ordine);
 
         saveOrdiniPizza(ordine, nuovePizze);
+        return ordineMapper.ordineToDTO(ordine);
     }
 
 
