@@ -19,7 +19,10 @@ public class Cliente {
     private Long idCliente;
 
     @Column(nullable = false)
-    private String nome, indirizzo, telefono;
+    private String nome, indirizzo;
+
+    @Column(nullable = false, unique = true)
+    private String telefono;
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Ordine> ordini;

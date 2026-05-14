@@ -21,13 +21,13 @@ public class OrdineController {
     @Autowired
     private OrdineService service;
 
-    @PostMapping(path = "/", consumes = "application/json")
+    @PostMapping(path = "/", consumes = "application/json", produces = "application/json")
     public ResponseEntity<OrdineDTO> carica(@RequestBody @Valid OrdineDTO ordineDTO) {
         OrdineDTO dto = service.creaOrdine(ordineDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
-    @PostMapping(path = "/prioritari", consumes = "application/json")
+    @PostMapping(path = "/prioritari", consumes = "application/json", produces = "application/json")
     public ResponseEntity<OrdineDTO> caricaPrio(@RequestBody @Valid OrdinePrioritarioDTO ordinePrioritarioDTO) {
         OrdineDTO dto = service.creaOrdinePrioritario(ordinePrioritarioDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);

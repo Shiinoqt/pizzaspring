@@ -1,8 +1,12 @@
 package com.spring.pizzaspring.service;
 
+import com.spring.pizzaspring.component.SaveOrdiniPizzaComponent;
 import com.spring.pizzaspring.dto.ClienteDTO;
 import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.OrdinePizzaDTO;
+import com.spring.pizzaspring.exceptions.InvalidOrderException;
+import com.spring.pizzaspring.exceptions.NotFoundException;
+import com.spring.pizzaspring.exceptions.ResourceAlreadyExistsException;
 import com.spring.pizzaspring.mapper.ClienteMapper;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.model.Cliente;
@@ -40,35 +44,28 @@ public class ClienteServiceImpl implements ClienteService{
     @Autowired
     private OrdinePizzaRepository ordinePizzaRepository;
 
-    private void saveOrdiniPizza(Ordine ordine, List<OrdinePizzaDTO> pizze) {
-        for (OrdinePizzaDTO OPD : pizze) {
-            OrdinePizza newOP = new OrdinePizza();
-            Pizza pizza = pizzaRepository.findById(OPD.getIdPizza())
-                    .orElseThrow(() -> new RuntimeException("Pizza non trovata"));
-
-            newOP.setPizza(pizza);
-            newOP.setQuantita(OPD.getQuantita());
-            newOP.setOrdine(ordine);
-
-            ordinePizzaRepository.save(newOP);
-        }
-    }
+    @Autowired
+    private SaveOrdiniPizzaComponent saveOrdiniPizzaComponent;
 
     @Override
     @Transactional
     public ClienteDTO registraCliente(ClienteDTO clienteDTO) {
+        if (clienteDTO.getIdCliente() != null && clienteRepository.existsById(clienteDTO.getIdCliente())) {
+            throw new ResourceAlreadyExistsException("Client ID already registered.");
+        }
+
+        if (clienteRepository.existsByTelefono(clienteDTO.getTelefono())) {
+            throw new ResourceAlreadyExistsException("Phone number already registered.");
+        }
+
         if (clienteDTO.getOrdini() == null || clienteDTO.getOrdini().isEmpty()) {
-            throw new IllegalArgumentException("Impossibile registrare un cliente senza ordini");
+            throw new InvalidOrderException("Can't register client without orders.");
         }
 
         for (OrdineDTO dto : clienteDTO.getOrdini()) {
             if (dto.getPizzeOrdinate() == null || dto.getPizzeOrdinate().isEmpty()) {
-                throw new IllegalArgumentException("Ogni ordine deve contenere almeno una pizza");
+                throw new InvalidOrderException("Order must have one pizza.");
             }
-        }
-
-        if (clienteRepository.existsById(clienteDTO.getIdCliente())) {
-            throw new IllegalArgumentException("Cliente già registrato");
         }
 
         // Mapping and saving cliente
@@ -78,10 +75,11 @@ public class ClienteServiceImpl implements ClienteService{
         // For each ordine in the cliente set it and saves it to this
         for (OrdineDTO dto : clienteDTO.getOrdini()) {
             Ordine ordine = ordineMapper.DTOToOrdine(dto);
+
             ordine.setCliente(savedCliente);
             Ordine savedOrdine = ordineRepository.save(ordine);
 
-            saveOrdiniPizza(savedOrdine, dto.getPizzeOrdinate());
+            saveOrdiniPizzaComponent.saveOrdiniPizza(savedOrdine, dto.getPizzeOrdinate());
         }
 
         return clienteMapper.clienteToDTO(savedCliente);
@@ -90,7 +88,7 @@ public class ClienteServiceImpl implements ClienteService{
     @Override
     public ClienteDTO updateCliente(Long id, ClienteDTO newClienteDTO) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente not found."));
+                .orElseThrow(() -> new NotFoundException("Client ID not found."));
 
         cliente.setNome(newClienteDTO.getNome());
         cliente.setIndirizzo(newClienteDTO.getIndirizzo());
@@ -104,7 +102,7 @@ public class ClienteServiceImpl implements ClienteService{
     @Override
     public ClienteDTO getClienteById(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente not found."));
+                .orElseThrow(() -> new NotFoundException("Client not found."));
         return clienteMapper.clienteToDTO(cliente);
     }
 
@@ -119,7 +117,7 @@ public class ClienteServiceImpl implements ClienteService{
     @Override
     public Collection<OrdineDTO> getOrdiniByCliente(Long idCliente) {
         Cliente cliente = clienteRepository.findById(idCliente)
-                .orElseThrow(() -> new RuntimeException("Cliente non trovato"));
+                .orElseThrow(() -> new NotFoundException("Client not found."));
 
         return cliente.getOrdini().stream()
                 .map(ordine -> ordineMapper.ordineToDTO(ordine))
@@ -130,7 +128,7 @@ public class ClienteServiceImpl implements ClienteService{
     @Transactional
     public void deleteCliente(Long id) {
         if (!clienteRepository.existsById(id)) {
-            throw new RuntimeException("Cannot delete: Cliente not found");
+            throw new NotFoundException("Cannot delete: Client not found.");
         }
         clienteRepository.deleteById(id);
     }

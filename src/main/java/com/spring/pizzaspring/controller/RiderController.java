@@ -17,7 +17,7 @@ public class RiderController {
     @Autowired
     private RiderService service;
 
-    @PostMapping(path = "/", consumes = "application/json")
+    @PostMapping(path = "/", consumes = "application/json", produces = "application/json")
     public ResponseEntity<RiderDTO> carica(@RequestBody RiderDTO riderDTO) {
         RiderDTO dto = service.registraRider(riderDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);

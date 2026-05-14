@@ -1,8 +1,11 @@
 package com.spring.pizzaspring.service;
 
+import com.spring.pizzaspring.component.SaveOrdiniPizzaComponent;
 import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.OrdinePizzaDTO;
 import com.spring.pizzaspring.dto.OrdinePrioritarioDTO;
+import com.spring.pizzaspring.exceptions.InvalidOrderException;
+import com.spring.pizzaspring.exceptions.NotFoundException;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.mapper.OrdinePizzaMapper;
 import com.spring.pizzaspring.mapper.OrdinePrioritarioMapper;
@@ -10,12 +13,10 @@ import com.spring.pizzaspring.model.*;
 import com.spring.pizzaspring.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,37 +42,29 @@ public class OrdineServiceImpl implements OrdineService{
     @Autowired
     private PizzaRepository pizzaRepository;
 
+    @Autowired
+    private SaveOrdiniPizzaComponent saveOrdiniPizzaComponent;
+
     private Cliente validateOrdine(OrdineDTO dto) {
         // Check id cliente nell'ordine
         if (dto.getIdCliente() == null) {
-            throw new IllegalArgumentException("Ordine senza cliente");
+            throw new InvalidOrderException("Order without client.");
         }
 
         // Check esistenza del cliente nel db
         Cliente cliente = clienteRepository.findById(dto.getIdCliente())
-                .orElseThrow(() -> new RuntimeException("Cliente not found."));
+                .orElseThrow(() -> new NotFoundException("Client not found."));
 
         // Check presenza pizze
         if (dto.getPizzeOrdinate() == null || dto.getPizzeOrdinate().isEmpty()) {
-            throw new IllegalArgumentException("Ordine senza pizze");
+            throw new InvalidOrderException("Order must have one pizza.");
         }
 
         return cliente;
     }
 
-    private void saveOrdiniPizza(Ordine ordine, List<OrdinePizzaDTO> pizze) {
-        for (OrdinePizzaDTO OPD : pizze) {
-            OrdinePizza newOP = new OrdinePizza();
-            Pizza pizza = pizzaRepository.findById(OPD.getIdPizza())
-                    .orElseThrow(() -> new RuntimeException("Pizza non trovata"));
-
-            newOP.setPizza(pizza);
-            newOP.setQuantita(OPD.getQuantita());
-            newOP.setOrdine(ordine);
-
-            ordinePizzaRepository.save(newOP);
-        }
-    }
+    @Value("${ordine.prioritario.sovrapprezzo}")
+    private double sovrapprezzo;
 
     @Override
     @Transactional
@@ -79,36 +72,36 @@ public class OrdineServiceImpl implements OrdineService{
         Cliente cliente = validateOrdine(dto);
 
         Ordine ordine = ordineMapper.DTOToOrdine(dto);
+
         ordine.setCliente(cliente);
         Ordine savedOrdine = ordineRepository.save(ordine);
 
-        saveOrdiniPizza(savedOrdine, dto.getPizzeOrdinate());
-        return ordineMapper.ordineToDTO(ordine);
+        saveOrdiniPizzaComponent.saveOrdiniPizza(savedOrdine, dto.getPizzeOrdinate());
+        return ordineMapper.ordineToDTO(savedOrdine);
     }
 
     @Override
     @Transactional
     public OrdineDTO creaOrdinePrioritario(OrdinePrioritarioDTO dto) {
-        if (dto.getSovrapprezzo() <= 0) {
-            throw new IllegalArgumentException("Sovrapprezzo deve essere maggiore di 0");
-        }
         Cliente cliente = validateOrdine(dto);
 
         OrdinePrioritario ordinePrioritario = ordinePrioritarioMapper.DTOToOrdineprioritario(dto);
+
+        ordinePrioritario.setSovrapprezzo(sovrapprezzo);
         ordinePrioritario.setCliente(cliente);
 
         OrdinePrioritario savedOrdinePrio = ordineRepository.save(ordinePrioritario);
 
-        saveOrdiniPizza(savedOrdinePrio, dto.getPizzeOrdinate());
+        saveOrdiniPizzaComponent.saveOrdiniPizza(savedOrdinePrio, dto.getPizzeOrdinate());
         return ordineMapper.ordineToDTO(savedOrdinePrio);
     }
 
     @Override
     public OrdineDTO assegnaRider(String codiceOrdine, Long idRider) {
         Ordine ordine = ordineRepository.findById(codiceOrdine)
-                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+                .orElseThrow(() -> new NotFoundException("Order not found."));
         Rider rider = riderRepository.findById(idRider)
-                .orElseThrow(() -> new RuntimeException("Rider non trovato"));
+                .orElseThrow(() -> new NotFoundException("Rider not found."));
         ordine.setRider(rider);
         ordineRepository.save(ordine);
         return ordineMapper.ordineToDTO(ordine);
@@ -118,37 +111,33 @@ public class OrdineServiceImpl implements OrdineService{
     @Transactional
     public OrdineDTO modificaOrdine(String codiceOrdine, OrdineDTO newOrdineDTO) {
         Ordine ordine = ordineRepository.findById(codiceOrdine)
-                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+                .orElseThrow(() -> new NotFoundException("Order not found."));
 
-        validateOrdine(newOrdineDTO);
+        Cliente cliente = validateOrdine(newOrdineDTO);
 
-        if (newOrdineDTO.getIdCliente() != null) {
-            Cliente cliente = clienteRepository.findById(newOrdineDTO.getIdCliente())
-                    .orElseThrow(() -> new RuntimeException("Cliente non trovato"));
-            ordine.setCliente(cliente);
-        }
+        ordine.setCliente(cliente);
 
         ordine.getPizzeOrdinate().clear();
         ordineRepository.saveAndFlush(ordine); // Force the delete of old pizzas
 
         // Save the new pizza list
-        saveOrdiniPizza(ordine, newOrdineDTO.getPizzeOrdinate());
+        saveOrdiniPizzaComponent.saveOrdiniPizza(ordine, newOrdineDTO.getPizzeOrdinate());
         return ordineMapper.ordineToDTO(ordine);
     }
     @Override
     @Transactional
     public OrdineDTO patchPizzeOnly(String codiceOrdine, List<OrdinePizzaDTO> nuovePizze) {
         Ordine ordine = ordineRepository.findById(codiceOrdine)
-                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+                .orElseThrow(() -> new NotFoundException("Order not found."));
 
         if (nuovePizze == null || nuovePizze.isEmpty()) {
-            throw new IllegalArgumentException("L'ordine deve contenere almeno una pizza");
+            throw new InvalidOrderException("Order must have one pizza.");
         }
 
         ordine.getPizzeOrdinate().clear();
         ordineRepository.saveAndFlush(ordine);
 
-        saveOrdiniPizza(ordine, nuovePizze);
+        saveOrdiniPizzaComponent.saveOrdiniPizza(ordine, nuovePizze);
         return ordineMapper.ordineToDTO(ordine);
     }
 
@@ -156,7 +145,7 @@ public class OrdineServiceImpl implements OrdineService{
     @Override
     public Double calcoloTotale(String codiceOrdine) {
         Ordine ordine = ordineRepository.findById(codiceOrdine)
-                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+                .orElseThrow(() -> new NotFoundException("Order not found."));
 
         // Calculate the total of the pizzas
         double totalPizze = ordine.getPizzeOrdinate().stream()
@@ -174,7 +163,7 @@ public class OrdineServiceImpl implements OrdineService{
     @Override
     public OrdineDTO getOrdineById(String codice) {
         Ordine ordine = ordineRepository.findById(codice)
-                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+                .orElseThrow(() -> new NotFoundException("Order not found."));
 
         return ordineMapper.ordineToDTO(ordine);
     }
@@ -190,7 +179,7 @@ public class OrdineServiceImpl implements OrdineService{
     @Override
     public Map<String, Integer> getDettaglioPizze(String codiceOrdine) {
         Ordine ordine = ordineRepository.findById(codiceOrdine)
-                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+                .orElseThrow(() -> new NotFoundException("Order not found."));
 
         return ordine.getPizzeOrdinate().stream()
                 .collect(Collectors.toMap(
@@ -202,7 +191,7 @@ public class OrdineServiceImpl implements OrdineService{
     @Override
     public void deleteOrdine(String id) {
         if (!ordineRepository.existsById(id)) {
-            throw new RuntimeException("Ordine non trovato");
+            throw new NotFoundException("Order not found.");
         }
         ordineRepository.deleteById(id);
     }

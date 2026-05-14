@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter //Lombok annotation
 @Setter
@@ -27,4 +28,11 @@ public class Ordine {
     @ManyToOne // Many "order" can be associated to one rider
     @JoinColumn(name = "idRider") // Creates column "idRider" that points to the class primary key
     private Rider rider;
+
+    @PrePersist
+    private void generateCodice() {
+        if (this.codice == null) {
+            this.codice = "ORD-" + UUID.randomUUID().toString().substring(0, 8);
+        }
+    }
 }

@@ -1,5 +1,7 @@
 package com.spring.pizzaspring.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,12 +13,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrdineDTO {
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "Auto-generated, do not include in requests")
     private String codice;
 
-    @NotNull(message = "ID Cliente richiesto")
     private Long idCliente;
 
-    @NotEmpty(message = "L'Ordine deve contenere almeno una pizza")
+    @NotEmpty
+    @Valid
     private List<OrdinePizzaDTO> pizzeOrdinate;
 
     private Long idRider;

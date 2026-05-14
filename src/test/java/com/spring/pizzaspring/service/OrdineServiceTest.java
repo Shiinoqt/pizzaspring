@@ -1,5 +1,6 @@
 package com.spring.pizzaspring.service;
 
+import com.spring.pizzaspring.component.SaveOrdiniPizzaComponent;
 import com.spring.pizzaspring.dto.ClienteDTO;
 import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.OrdinePizzaDTO;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -26,11 +28,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class OrdineServiceTest {
-    @Mock
-    private PizzaRepository pizzaRepository;
-
-    @Mock
-    private OrdinePizzaRepository ordinePizzaRepository;
 
     @Mock
     private ClienteRepository clienteRepository;
@@ -47,15 +44,20 @@ public class OrdineServiceTest {
     @Mock
     private OrdinePrioritarioMapper ordinePrioritarioMapper;
 
+    @Mock
+    private SaveOrdiniPizzaComponent saveOrdiniPizzaComponent;
+
     @InjectMocks
     private OrdineServiceImpl service;
 
     private Cliente clienteEntity;
     private ClienteDTO clienteDto;
 
-    // Initializes reusable "Cliente" objects before every test
     @BeforeEach
     void setUp() {
+        // Inject the @Value field since Mockito doesn't handle it
+        ReflectionTestUtils.setField(service, "sovrapprezzo", 2.50);
+
         clienteEntity = new Cliente();
         clienteEntity.setIdCliente(1L);
         clienteEntity.setNome("Mario Rossi");
@@ -66,14 +68,14 @@ public class OrdineServiceTest {
         clienteDto.setNome("Mario Rossi");
         clienteDto.setIndirizzo("Via Roma 1");
     }
+
     @Test
     @DisplayName("Should successfully save a standard order and its pizzas")
     void creaOrdine() {
         Long clienteId = 1L;
-        Long pizzaId = 10L;
 
         OrdinePizzaDTO pizzaDto = new OrdinePizzaDTO();
-        pizzaDto.setIdPizza(pizzaId);
+        pizzaDto.setIdPizza(10L);
         pizzaDto.setQuantita(2);
 
         OrdineDTO dto = new OrdineDTO();
@@ -81,52 +83,47 @@ public class OrdineServiceTest {
         dto.setPizzeOrdinate(List.of(pizzaDto));
 
         Ordine entity = new Ordine();
-        Pizza pizzaEntity = new Pizza();
 
         when(clienteRepository.findById(clienteId)).thenReturn(Optional.of(clienteEntity));
         when(ordineMapper.DTOToOrdine(dto)).thenReturn(entity);
         when(ordineRepository.save(entity)).thenReturn(entity);
-        when(pizzaRepository.findById(pizzaId)).thenReturn(Optional.of(pizzaEntity));
+        doNothing().when(saveOrdiniPizzaComponent).saveOrdiniPizza(any(Ordine.class), any());
 
         service.creaOrdine(dto);
 
-        verify(ordineRepository, times(1)).save(entity);
-        verify(ordinePizzaRepository, times(1)).save(any(OrdinePizza.class));
-        assertEquals(clienteEntity, entity.getCliente(), "The entity should have client assigned");
+        verify(ordineRepository).save(entity);
         verify(clienteRepository).findById(clienteId);
-        verify(pizzaRepository).findById(pizzaId);
+        verify(saveOrdiniPizzaComponent).saveOrdiniPizza(any(Ordine.class), any());
+        assertEquals(clienteEntity, entity.getCliente());
     }
 
     @Test
     @DisplayName("Should successfully save a priority order and its pizzas")
     void creaOrdinePrioritario() {
         Long clienteId = 1L;
-        Long pizzaId = 20L;
 
         OrdinePizzaDTO pizzaDto = new OrdinePizzaDTO();
-        pizzaDto.setIdPizza(pizzaId);
+        pizzaDto.setIdPizza(20L);
         pizzaDto.setQuantita(1);
 
         OrdinePrioritarioDTO dto = new OrdinePrioritarioDTO();
         dto.setIdCliente(clienteId);
-        dto.setSovrapprezzo(3.0);
         dto.setPizzeOrdinate(List.of(pizzaDto));
 
         OrdinePrioritario entity = new OrdinePrioritario();
-        Pizza pizzaEntity = new Pizza();
 
         when(clienteRepository.findById(clienteId)).thenReturn(Optional.of(clienteEntity));
         when(ordinePrioritarioMapper.DTOToOrdineprioritario(dto)).thenReturn(entity);
         when(ordineRepository.save(entity)).thenReturn(entity);
-        when(pizzaRepository.findById(pizzaId)).thenReturn(Optional.of(pizzaEntity));
+        doNothing().when(saveOrdiniPizzaComponent).saveOrdiniPizza(any(Ordine.class), any());
 
         service.creaOrdinePrioritario(dto);
 
-        verify(ordineRepository, times(1)).save(entity);
-        verify(ordinePizzaRepository, times(1)).save(any(OrdinePizza.class));
-        assertEquals(clienteEntity, entity.getCliente(), "The priority order should be linked to the correct client");
+        verify(ordineRepository).save(entity);
         verify(clienteRepository).findById(clienteId);
-        verify(pizzaRepository).findById(pizzaId);
+        verify(saveOrdiniPizzaComponent).saveOrdiniPizza(any(Ordine.class), any());
+        assertEquals(clienteEntity, entity.getCliente());
+        assertEquals(2.50, entity.getSovrapprezzo());
     }
 
     @Test
@@ -175,6 +172,7 @@ public class OrdineServiceTest {
         ordinePrio.setPizzeOrdinate(List.of(link));
 
         when(ordineRepository.findById(codice)).thenReturn(Optional.of(ordinePrio));
+
         Double result = service.calcoloTotale(codice);
 
         assertEquals(13.0, result);

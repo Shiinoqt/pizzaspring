@@ -2,6 +2,7 @@ package com.spring.pizzaspring.service;
 
 import com.spring.pizzaspring.dto.OrdineDTO;
 import com.spring.pizzaspring.dto.RiderDTO;
+import com.spring.pizzaspring.exceptions.NotFoundException;
 import com.spring.pizzaspring.mapper.OrdineMapper;
 import com.spring.pizzaspring.mapper.RiderMapper;
 import com.spring.pizzaspring.model.Rider;
@@ -34,14 +35,14 @@ public class RiderServiceImpl implements RiderService{
     @Override
     public RiderDTO getRiderById(Long id) {
         Rider rider = riderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rider non trovato"));
+                .orElseThrow(() -> new NotFoundException("Rider not found."));
         return riderMapper.riderToDTO(rider);
     }
 
     @Override
     public RiderDTO updateRider(Long id, RiderDTO newRiderDTO) {
         Rider rider = riderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rider not found."));
+                .orElseThrow(() -> new NotFoundException("Rider not found."));
 
         rider.setNome(newRiderDTO.getNome());
 
@@ -53,7 +54,7 @@ public class RiderServiceImpl implements RiderService{
     @Override
     public Collection<OrdineDTO> getOrdiniByRider(Long idRider) {
         Rider rider = riderRepository.findById(idRider)
-                .orElseThrow(() -> new RuntimeException("Rider non trovato"));
+                .orElseThrow(() -> new NotFoundException("Rider not found."));
 
         return rider.getOrdini().stream()
                 .map(ordineMapper::ordineToDTO)
@@ -71,7 +72,7 @@ public class RiderServiceImpl implements RiderService{
     @Override
     public void deleteRider(Long id) {
         if (!riderRepository.existsById(id)) {
-            throw new RuntimeException("Rider non trovato");
+            throw new NotFoundException("Rider not found.");
         }
         riderRepository.deleteById(id);
     }

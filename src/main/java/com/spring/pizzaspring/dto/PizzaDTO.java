@@ -1,17 +1,26 @@
 package com.spring.pizzaspring.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class PizzaDTO {
+    @Null(groups = ClienteDTO.OnCreate.class)
+    @NotNull(groups = ClienteDTO.OnUpdate.class)
+    @Positive(groups = ClienteDTO.OnUpdate.class)
     private Long idPizza;
-    @NotNull
+
+    @NotBlank
+    @Size(min = 2, max = 50)
     private String nome;
-    @NotNull
+
+    @NotBlank
+    @Size(max = 500)
     private String descrizione;
+
     @NotNull
-    private double prezzo;
+    @DecimalMin(value = "0")
+    private Double prezzo;
 }

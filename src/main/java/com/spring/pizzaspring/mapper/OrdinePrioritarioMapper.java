@@ -14,5 +14,6 @@ public interface OrdinePrioritarioMapper {
     
     @Mapping(source = "idCliente", target = "cliente", ignore = true)
     @Mapping(source = "idRider", target = "rider", ignore = true)
+    @Mapping(target = "sovrapprezzo", ignore = true)
     OrdinePrioritario DTOToOrdineprioritario(OrdinePrioritarioDTO ordinePrioritarioDTO);
 }

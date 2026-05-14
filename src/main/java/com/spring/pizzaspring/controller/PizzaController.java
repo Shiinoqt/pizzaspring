@@ -19,7 +19,7 @@ public class PizzaController {
     private PizzaService service;
 
     @PostMapping(path = "/", consumes = "application/json")
-    public ResponseEntity<PizzaDTO> carica(@RequestBody PizzaDTO pizzaDTO) {
+    public ResponseEntity<PizzaDTO> carica(@RequestBody @Valid PizzaDTO pizzaDTO) {
         PizzaDTO dto = service.createPizza(pizzaDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }

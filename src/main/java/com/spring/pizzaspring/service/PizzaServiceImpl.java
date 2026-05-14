@@ -1,6 +1,8 @@
 package com.spring.pizzaspring.service;
 
 import com.spring.pizzaspring.dto.PizzaDTO;
+import com.spring.pizzaspring.exceptions.NotFoundException;
+import com.spring.pizzaspring.exceptions.ResourceAlreadyExistsException;
 import com.spring.pizzaspring.mapper.PizzaMapper;
 import com.spring.pizzaspring.model.Pizza;
 import com.spring.pizzaspring.repository.PizzaRepository;
@@ -22,7 +24,7 @@ public class PizzaServiceImpl implements PizzaService {
     @Override
     public PizzaDTO createPizza(PizzaDTO pizzaDTO) {
         if (pizzaRepository.existsByNome(pizzaDTO.getNome())) {
-            throw new RuntimeException("Errore: Una pizza con il nome '" + pizzaDTO.getNome() + "' è già presente a sistema");
+            throw new ResourceAlreadyExistsException("This pizza already exists.");
         }
         Pizza pizza = pizzaMapper.DTOToPizza(pizzaDTO);
         Pizza savedPizza = pizzaRepository.save(pizza);
@@ -32,7 +34,7 @@ public class PizzaServiceImpl implements PizzaService {
     @Override
     public PizzaDTO updatePizza(Long id, PizzaDTO pizzaDTO) {
         Pizza existingPizza = pizzaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pizza not found."));
+                .orElseThrow(() -> new NotFoundException("Pizza not found."));
 
         existingPizza.setNome(pizzaDTO.getNome());
         existingPizza.setDescrizione(pizzaDTO.getDescrizione());
@@ -45,7 +47,7 @@ public class PizzaServiceImpl implements PizzaService {
     @Override
     public void deletePizza(Long id) {
         if (!pizzaRepository.existsById(id)) {
-            throw new RuntimeException("Pizza not found.");
+            throw new NotFoundException("Pizza not found.");
         }
         pizzaRepository.deleteById(id);
     }
@@ -53,7 +55,7 @@ public class PizzaServiceImpl implements PizzaService {
     @Override
     public PizzaDTO getPizzaById(Long id) {
         Pizza pizza = pizzaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pizza not found."));
+                .orElseThrow(() -> new NotFoundException("Pizza not found."));
         return pizzaMapper.pizzaToDTO(pizza);
     }
 
@@ -68,7 +70,7 @@ public class PizzaServiceImpl implements PizzaService {
     @Override
     public PizzaDTO patchPizzaPrice(Long id, Double newPrice) {
         Pizza pizza = pizzaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pizza not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException("Pizza not found."));
         pizza.setPrezzo(newPrice);
         Pizza updatedPizza = pizzaRepository.save(pizza);
         return pizzaMapper.pizzaToDTO(updatedPizza);
