@@ -172,7 +172,12 @@ public class OrdineServiceImpl implements OrdineService{
     public Collection<OrdineDTO> selectAll() {
         return ordineRepository.findAll()
                 .stream()
-                .map(ordineMapper::ordineToDTO)
+                .map(ordine -> {
+                    if (ordine instanceof OrdinePrioritario) {
+                        return ordinePrioritarioMapper.ordineprioritarioToDTO((OrdinePrioritario) ordine);
+                    }
+                    return ordineMapper.ordineToDTO(ordine);
+                })
                 .toList();
     }
 
