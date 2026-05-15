@@ -25,7 +25,7 @@ public class ClienteController {
     }
 
     @PutMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<ClienteDTO> aggiorna(@PathVariable Long id, @RequestBody ClienteDTO clienteDTO) {
+    public ResponseEntity<ClienteDTO> aggiorna(@PathVariable Long id, @RequestBody @Valid ClienteDTO clienteDTO) {
         ClienteDTO dto = service.updateCliente(id, clienteDTO);
         return ResponseEntity.ok(dto);
     }

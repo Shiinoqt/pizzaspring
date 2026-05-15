@@ -40,7 +40,7 @@ public class OrdineController {
     }
 
     @PatchMapping("/{codiceOrdine}")
-    public ResponseEntity<OrdineDTO> patchPizze(@PathVariable String codiceOrdine, @RequestBody List<OrdinePizzaDTO> nuovePizze) {
+    public ResponseEntity<OrdineDTO> patchPizze(@PathVariable String codiceOrdine, @RequestBody List<@Valid OrdinePizzaDTO> nuovePizze) {
         OrdineDTO dto = service.patchPizzeOnly(codiceOrdine, nuovePizze);
         return ResponseEntity.ok(dto);
     }

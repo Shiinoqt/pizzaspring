@@ -25,7 +25,7 @@ public class PizzaController {
     }
 
     @PutMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<PizzaDTO> aggiorna(@PathVariable Long id, @RequestBody PizzaDTO pizzaDTO) {
+    public ResponseEntity<PizzaDTO> aggiorna(@PathVariable Long id, @RequestBody @Valid PizzaDTO pizzaDTO) {
         PizzaDTO dto = service.updatePizza(id, pizzaDTO);
         return ResponseEntity.ok(dto);
     }
