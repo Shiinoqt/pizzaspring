@@ -86,14 +86,19 @@ public class OrdineServiceImpl implements OrdineService{
         Cliente cliente = validateOrdine(dto);
 
         OrdinePrioritario ordinePrioritario = ordinePrioritarioMapper.DTOToOrdineprioritario(dto);
-
         ordinePrioritario.setSovrapprezzo(sovrapprezzo);
         ordinePrioritario.setCliente(cliente);
 
-        OrdinePrioritario savedOrdinePrio = ordineRepository.save(ordinePrioritario);
+        OrdinePrioritario saved = ordineRepository.save(ordinePrioritario);
+        saveOrdiniPizzaComponent.saveOrdiniPizza(saved, dto.getPizzeOrdinate());
 
-        saveOrdiniPizzaComponent.saveOrdiniPizza(savedOrdinePrio, dto.getPizzeOrdinate());
-        return ordineMapper.ordineToDTO(savedOrdinePrio);
+        return OrdinePrioritarioDTO.builder()
+                .codice(saved.getCodice())
+                .idCliente(cliente.getIdCliente())
+                .pizzeOrdinate(dto.getPizzeOrdinate())
+                .sovrapprezzo(sovrapprezzo)
+                .tipoOrdine("prioritario")
+                .build();
     }
 
     @Override

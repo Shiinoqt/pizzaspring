@@ -6,12 +6,14 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 public class OrdineDTO {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "Auto-generated, do not include in requests")
     private String codice;
