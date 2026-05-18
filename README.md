@@ -39,7 +39,7 @@ A **Spring Boot** REST API for managing a modern pizza ordering and delivery sys
 ### 1. Clone the repository
 
 ```bash
-git clone [https://github.com/Shiinoqt/pizzaspring.git](https://github.com/Shiinoqt/pizzaspring.git)
+git clone https://github.com/Shiinoqt/pizzaspring.git
 cd pizzaspring
 
 ```
