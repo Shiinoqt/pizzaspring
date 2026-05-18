@@ -89,12 +89,13 @@ The app will start at `http://localhost:8080`.
 src/main/java/com/spring/pizzaspring/
 ├── PizzaspringApplication.java
 ├── controller/        # REST Controllers
+├── security/          # Security
 ├── service/           # Business logic
 ├── repository/        # JPA Repositories
 ├── model/             # JPA Entities
 ├── dto/               # Data Transfer Objects
 ├── mapper/            # MapStruct mappers
-├── config/            # Security, Swagger, etc.
+├── config/            # Misc.
 ├── component/         # Utility components
 └── exceptions/        # Custom exceptions
 
