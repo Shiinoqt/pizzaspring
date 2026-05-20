@@ -1,102 +1,101 @@
-# 🍕 PizzaSpring
+# PizzaSpring
 
-A **Spring Boot** REST API for managing a modern pizza ordering and delivery system.
+PizzaSpring is a backend web application built using Java and Spring Boot. It provides a RESTful API designed to manage a pizza ordering system, allowing for the administration of pizza menus, tracking of inventory, and processing of customer orders.
 
-![Java](https://img.shields.io/badge/Java-17-blue?logo=openjdk)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-brightgreen?logo=springboot)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?logo=mysql)
+## Features
 
-## ✨ Features
+- Pizza Menu Management: Create, read, update, and delete pizza varieties, sizes, and toppings.
+- Order Processing: Handle customer orders, calculate totals, and track the status of orders.
+- Customer Management: Manage customer profiles and order histories.
+- Database Integration: Persistence layer using Spring Data JPA and Hibernate.
 
-- **Full CRUD** operations for Pizzas
-- **Customer** (Cliente) management
-- **Order** (Ordine) management with priority pricing logic
-- **Rider** (delivery) management
-- MySQL database integration with JPA/Hibernate
-- Robust validation using Jakarta Validation
-- DTO pattern with **MapStruct** mapping
-- **OpenAPI / Swagger** documentation
-- Exception handling
-- Spring Security (basic setup)
+## Tech Stack
 
-## 🛠 Technologies
+- Java 17 or higher
+- Spring Boot
+- Spring Data JPA
+- Database (MySQL / PostgreSQL / H2)
+- Maven (Dependency Management)
 
-- **Java 17**
-- **Spring Boot 3.4** (Web, Data JPA, Validation, Security)
-- **MySQL**
-- **Lombok** + **MapStruct**
-- **SpringDoc OpenAPI** (Swagger UI)
-- Maven
+---
 
-## 🚀 Getting Started
+## Prerequisites
 
-### Prerequisites
+Ensure you have the following installed before running the application:
+- JDK 17+
+- Maven 3.x
+- Git
 
-- Java 17+
-- Maven
-- MySQL 8.0+
+---
 
-### 1. Clone the repository
+## Getting Started
 
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/Shiinoqt/pizzaspring.git
+git clone [https://github.com/Shiinoqt/pizzaspring.git](https://github.com/Shiinoqt/pizzaspring.git)
 cd pizzaspring
 
 ```
 
-### 2. Database Setup
+### 2. Database Configuration
 
-Create a MySQL database:
-
-```sql
-CREATE DATABASE pizzaspring;
-
-```
-
-### 3. Configuration
-
-Set up your credentials in `src/main/resources/application.properties`:
+Open the configuration file located at `src/main/resources/application.properties` (or `application.yml`) and adjust the database credentials to match your local setup:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/pizzaspring?createDatabaseIfNotExist=true
-spring.datasource.username=your_username
+server.port=8080
+
+# Database Configuration (Example for MySQL)
+spring.datasource.url=jdbc:mysql://localhost:3306/pizza_db?useSSL=false&serverTimezone=UTC
+spring.datasource.username=root
 spring.datasource.password=your_password
 
-# Optional: Hibernate settings
+# JPA / Hibernate Properties
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
 ```
 
-### 4. Run the application
+### 3. Run the Application
+
+You can start the server using the Maven wrapper included in the project:
+
+On Windows:
+
+```bash
+mvnw.cmd spring-boot:run
+
+```
+
+On Linux/macOS:
 
 ```bash
 ./mvnw spring-boot:run
 
 ```
 
-The app will start at `http://localhost:8080`.
+The application will launch on `http://localhost:8080`.
 
-## 📡 API Documentation
+---
 
-* **Base URL:** `http://localhost:8080/api`
-* **Swagger UI:** `http://localhost:8080/api/swagger-ui.html`
-* **OpenAPI JSON:** `http://localhost:8080/api/v3/api-docs`
+## API Endpoints
 
-## 📁 Project Structure
+### Pizza Management
 
-```text
-src/main/java/com/spring/pizzaspring/
-├── PizzaspringApplication.java
-├── controller/        # REST Controllers
-├── security/          # Security
-├── service/           # Business logic
-├── repository/        # JPA Repositories
-├── model/             # JPA Entities
-├── dto/               # Data Transfer Objects
-├── mapper/            # MapStruct mappers
-├── config/            # Misc.
-├── component/         # Utility components
-└── exceptions/        # Custom exceptions
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | /api/pizzas | Retrieve all available pizzas |
+| GET | /api/pizzas/{id} | Retrieve details of a specific pizza |
+| POST | /api/pizzas | Add a new pizza to the menu |
+| PUT | /api/pizzas/{id} | Update an existing pizza's details |
+| DELETE | /api/pizzas/{id} | Remove a pizza from the menu |
 
-```
+### Order Management
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | /api/orders | Place a new pizza order |
+| GET | /api/orders/{id} | Fetch details of a specific order |
+| PATCH | /api/orders/{id}/status | Update the fulfillment status of an order |
+
+---
